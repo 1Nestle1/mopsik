@@ -3,7 +3,8 @@ import {
   PluginCapabilityMode,
   PluginCapabilityType,
   type TActivityLogDetailsMap,
-  type TMessageMetadata
+  type TMessageMetadata,
+  type TPluginMessageComponent
 } from '@sharkord/shared';
 import { sql } from 'drizzle-orm';
 import {
@@ -267,6 +268,9 @@ const messages = sqliteTable(
       onDelete: 'cascade'
     }),
     pluginId: text('plugin_id'),
+    pluginComponents: text('plugin_components', {
+      mode: 'json'
+    }).$type<TPluginMessageComponent[] | null>(),
     channelId: integer('channel_id')
       .notNull()
       .references(() => channels.id, { onDelete: 'cascade' }),
@@ -582,6 +586,17 @@ const pluginUserData = sqliteTable(
   ]
 );
 
+const pluginStorage = sqliteTable(
+  'plugin_storage',
+  {
+    pluginId: text('plugin_id').notNull(),
+    key: text('key').notNull(),
+    value: text('value', { mode: 'json' }).notNull(),
+    updatedAt: integer('updated_at').notNull()
+  },
+  (t) => [primaryKey({ columns: [t.pluginId, t.key] })]
+);
+
 const pluginCapabilities = sqliteTable(
   'plugin_capabilities',
   {
@@ -634,6 +649,7 @@ export {
   pluginCapabilities,
   pluginCapabilityRoles,
   pluginData,
+  pluginStorage,
   pluginUserData,
   rolePermissions,
   roles,
