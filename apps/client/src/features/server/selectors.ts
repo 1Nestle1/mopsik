@@ -8,6 +8,7 @@ import {
   type TPluginStoreState
 } from '@sharkord/shared';
 import { createCachedSelector } from 're-reselect';
+import { hotkeysEnabledSelector } from '../app/selectors';
 import type { IRootState } from '../store';
 import { categoriesSelector } from './categories/selectors';
 import {
@@ -57,6 +58,8 @@ export const reconnectSelector = (state: IRootState) => state.server.reconnect;
 
 export const reconnectingSelector = (state: IRootState) =>
   !!state.server.reconnect;
+
+export const serverIdSelector = (state: IRootState) => state.server.serverId;
 
 export const serverNameSelector = (state: IRootState) =>
   state.server.publicSettings?.name;
@@ -314,6 +317,7 @@ export const mapStateToPluginState = createSelector(
     selectedChannelIdSelector,
     currentVoiceChannelIdSelector,
     ownVoiceStateSelector,
+    hotkeysEnabledSelector,
     publicServerSettingsSelector
   ],
   (
@@ -327,6 +331,7 @@ export const mapStateToPluginState = createSelector(
     selectedChannelId,
     currentVoiceChannelId,
     ownVoiceState,
+    hotkeysEnabled,
     publicSettings
   ): TPluginStoreState => ({
     users,
@@ -339,6 +344,7 @@ export const mapStateToPluginState = createSelector(
     selectedChannelId,
     currentVoiceChannelId,
     ownVoiceState,
+    hotkeysEnabled,
     publicSettings
   })
 );

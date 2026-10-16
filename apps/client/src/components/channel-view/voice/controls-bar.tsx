@@ -102,7 +102,11 @@ const ControlsBar = memo(({ channelId }: TControlsBarProps) => {
             disabledIcon={Mic}
             enabledClassName="bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive"
             onClick={toggleMic}
-            disabled={!permissions.canSpeak || ownVoiceState.soundMuted}
+            disabled={
+              !permissions.canSpeak ||
+              ownVoiceState.soundMuted ||
+              ownVoiceState.serverMuted
+            }
           />
         )}
 

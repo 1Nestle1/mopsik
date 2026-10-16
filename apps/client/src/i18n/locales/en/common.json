@@ -156,5 +156,16 @@
   "userMenuOffline": "offline",
   "userMenuNoVoiceTargets": "No other voice channels",
   "userMenuDisconnect": "Disconnect from voice",
-  "failedDisconnectUser": "Could not disconnect this person"
+  "failedDisconnectUser": "Could not disconnect this person",
+  "runCommand": "Run command",
+  "commandStatusPending": "Pending",
+  "commandStatusCompleted": "Completed",
+  "commandStatusFailed": "Failed",
+  "commandResponse": "Response",
+  "commandArgRequired": "required",
+  "commandArgOptional": "optional",
+  "commandArgYes": "Yes",
+  "commandArgNo": "No",
+  "commandArgMissing": "/{{commandName}} needs a value for {{argName}}.",
+  "mutedByModerator": "You were muted by a moderator."
 }

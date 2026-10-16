@@ -53,6 +53,11 @@ export enum ScreenContentHint {
   DETAIL = 'detail'
 }
 
+export enum MicMode {
+  OPEN = 'open',
+  PUSH_TO_TALK = 'push-to-talk'
+}
+
 export enum NoiseSuppression {
   NONE = 'none',
   STANDARD = 'standard',

@@ -41,9 +41,15 @@ const VoiceUser = memo(
     );
 
     const micIcon = isOwnUser ? (
-      <OwnVoiceUserMicIcon micMuted={user.state.micMuted} />
+      <OwnVoiceUserMicIcon
+        micMuted={user.state.micMuted}
+        serverMuted={user.state.serverMuted}
+      />
     ) : (
-      <VoiceUserMicIcon micMuted={user.state.micMuted} />
+      <VoiceUserMicIcon
+        micMuted={user.state.micMuted}
+        serverMuted={user.state.serverMuted}
+      />
     );
 
     const handleDragStart = useCallback(

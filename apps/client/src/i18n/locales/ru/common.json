@@ -158,5 +158,16 @@
   "userMenuOffline": "не в сети",
   "userMenuNoVoiceTargets": "Других голосовых каналов нет",
   "userMenuDisconnect": "Отключить от голосового канала",
-  "failedDisconnectUser": "Не удалось отключить пользователя"
+  "failedDisconnectUser": "Не удалось отключить пользователя",
+  "runCommand": "Выполнить команду",
+  "commandStatusPending": "Ожидание",
+  "commandStatusCompleted": "Выполнено",
+  "commandStatusFailed": "Ошибка",
+  "commandResponse": "Ответ",
+  "commandArgRequired": "обязательно",
+  "commandArgOptional": "необязательно",
+  "commandArgYes": "Да",
+  "commandArgNo": "Нет",
+  "commandArgMissing": "/{{commandName}}: укажите значение для {{argName}}.",
+  "mutedByModerator": "Модератор отключил вам микрофон."
 }

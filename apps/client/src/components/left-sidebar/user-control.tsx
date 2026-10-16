@@ -46,6 +46,16 @@ const UserControl = memo(() => {
       };
     }
 
+    // muting is out of the user's hands until the moderator lifts it, so the button only explains
+    if (ownVoiceState.serverMuted) {
+      return {
+        label: t('common:mutedByModerator'),
+        className: 'text-warning bg-warning/10 hover:text-warning',
+        Icon: MicOff,
+        onClick: toggleMic
+      };
+    }
+
     if (ownVoiceState.micMuted) {
       return {
         label: t('unmuteMic'),
@@ -62,7 +72,14 @@ const UserControl = memo(() => {
       Icon: Mic,
       onClick: toggleMic
     };
-  }, [micFailure, ownVoiceState.micMuted, retryMic, toggleMic, t]);
+  }, [
+    micFailure,
+    ownVoiceState.serverMuted,
+    ownVoiceState.micMuted,
+    retryMic,
+    toggleMic,
+    t
+  ]);
 
   const MicIcon = micButton.Icon;
 
@@ -105,7 +122,8 @@ const UserControl = memo(() => {
           aria-label={micButton.label}
           disabled={
             !channelCan(ChannelPermission.SPEAK) ||
-            (!micFailure && ownVoiceState.soundMuted)
+            (!micFailure &&
+              (ownVoiceState.soundMuted || ownVoiceState.serverMuted))
           }
         >
           <MicIcon className="h-4 w-4" />

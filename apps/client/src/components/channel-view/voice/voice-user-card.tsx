@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { PluginSlot, StreamKind } from '@sharkord/shared';
 import { HeadphoneOff, MicOff, Monitor, Video } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CardTheme } from './card-theme';
 import {
   cardBadgeClass,
@@ -61,6 +62,7 @@ const VoiceUserCard = memo(
     voiceUser,
     isAnyCardPinned = false
   }: TVoiceUserCardProps) => {
+    const { t } = useTranslation('common');
     const { videoRef, hasVideoStream } = useVoiceRefs(userId);
     const { volumeKey } = useStreamVolumeControl({ type: 'user', userId });
     const { devices } = useDevices();
@@ -75,6 +77,9 @@ const VoiceUserCard = memo(
     const density = cardDensity(isCompact);
     const showQualityControl =
       !isOwnUser && webRtcSimulcastEnabled && hasVideoStream;
+    const micTitle = voiceUser.state.serverMuted
+      ? t('mutedByModerator')
+      : undefined;
 
     const handlePinToggle = useCallback(() => {
       if (isPinned) {
@@ -215,10 +220,17 @@ const VoiceUserCard = memo(
           >
             <div className={cardBadgeClass(isCompact)}>
               {voiceUser.state.micMuted && !voiceUser.state.soundMuted && (
-                <MicOff
-                  className="text-destructive shrink-0 size-3"
-                  fill="currentColor"
-                />
+                <span title={micTitle}>
+                  <MicOff
+                    className={cn(
+                      'shrink-0 size-3',
+                      voiceUser.state.serverMuted
+                        ? 'text-warning'
+                        : 'text-destructive'
+                    )}
+                    fill="currentColor"
+                  />
+                </span>
               )}
               {voiceUser.state.soundMuted && (
                 <HeadphoneOff

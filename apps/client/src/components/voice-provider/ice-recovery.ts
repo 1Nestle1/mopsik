@@ -1,8 +1,4 @@
-import {
-  logVoice,
-  logVoiceError,
-  logVoiceWarn
-} from '@/helpers/browser-logger';
+import { voiceLogger } from '@/helpers/browser-logger';
 import type {
   AppData,
   ConnectionState,
@@ -51,7 +47,7 @@ const createIceRecovery = ({
     if (!transport || transport.closed || restarting) return;
 
     if (attempts >= MAX_ICE_RESTARTS) {
-      logVoiceWarn(`${direction} transport: ice restarts exhausted`, {
+      voiceLogger.warn(`${direction} transport: ice restarts exhausted`, {
         attempts
       });
       onExhausted();
@@ -62,7 +58,7 @@ const createIceRecovery = ({
     attempts += 1;
     restarting = true;
 
-    logVoiceWarn(`${direction} transport: restarting ice`, {
+    voiceLogger.warn(`${direction} transport: restarting ice`, {
       attempt: attempts
     });
 
@@ -73,7 +69,7 @@ const createIceRecovery = ({
     } catch (error) {
       // also lands here while the server connection itself is down, and the reconnect
       // that follows rejoins the call, so giving up is the right call either way
-      logVoiceError(`${direction} transport: ice restart failed`, error);
+      voiceLogger.error(`${direction} transport: ice restart failed`, error);
       onExhausted();
     } finally {
       restarting = false;
@@ -83,7 +79,7 @@ const createIceRecovery = ({
   const onConnectionStateChange = (state: ConnectionState) => {
     if (state === 'connected') {
       if (attempts > 0) {
-        logVoice(`${direction} transport: recovered`, { attempts });
+        voiceLogger.info(`${direction} transport: recovered`, { attempts });
       }
 
       clearGraceTimer();

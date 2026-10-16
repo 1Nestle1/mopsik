@@ -122,5 +122,16 @@
   "reconnectingAbort": "Přestat se připojovat",
   "removeImage": "Odebrat obrázek",
   "channelMutedTooltip": "Kanál je ztlumen, kliknutím zrušíte ztlumení",
-  "unknownRole": "Neznámá role"
+  "unknownRole": "Neznámá role",
+  "runCommand": "Spustit příkaz",
+  "commandStatusPending": "Čeká",
+  "commandStatusCompleted": "Dokončeno",
+  "commandStatusFailed": "Selhalo",
+  "commandResponse": "Odpověď",
+  "commandArgRequired": "povinné",
+  "commandArgOptional": "volitelné",
+  "commandArgYes": "Ano",
+  "commandArgNo": "Ne",
+  "commandArgMissing": "/{{commandName}} potřebuje hodnotu pro {{argName}}.",
+  "mutedByModerator": "Moderátor vám vypnul mikrofon."
 }
