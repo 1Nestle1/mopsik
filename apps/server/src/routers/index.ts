@@ -9,6 +9,7 @@ import { messagesRouter } from './messages';
 import { othersRouter } from './others';
 import { pluginsRouter } from './plugins';
 import { rolesRouter } from './roles';
+import { streamingRouter } from './streaming';
 import { usersRouter } from './users';
 import { voiceRouter } from './voice';
 
@@ -24,7 +25,8 @@ const appRouter = t.router({
   invites: invitesRouter,
   voice: voiceRouter,
   categories: categoriesRouter,
-  plugins: pluginsRouter
+  plugins: pluginsRouter,
+  streaming: streamingRouter
 });
 
 type AppRouter = typeof appRouter;

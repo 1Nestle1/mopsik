@@ -9,12 +9,7 @@ import type {
   UnloadPluginContext,
   UpgradePluginContext
 } from '@sharkord/plugin-sdk';
-import {
-  ServerEvents,
-  StreamKind,
-  type ChannelPermission,
-  type Permission
-} from '@sharkord/shared';
+import { type ChannelPermission, type Permission } from '@sharkord/shared';
 import path from 'path';
 import { channelUserCan } from '../db/queries/channels';
 import { getFileNameById } from '../db/queries/files';
@@ -26,6 +21,7 @@ import {
 } from '../db/queries/plugin-user-data';
 import { getRole, getRoles, userCan } from '../db/queries/roles';
 import { getPublicUserById, getPublicUsers } from '../db/queries/users';
+import { createExternalStream } from '../helpers/external-streams';
 import { getPluginVoiceRuntime } from '../helpers/get-plugin-voice-runtime';
 import { PUBLIC_PATH } from '../helpers/paths';
 import {
@@ -35,7 +31,6 @@ import {
   setVoiceServerMute
 } from '../helpers/voice-moderation';
 import { VoiceRuntime } from '../runtimes/voice';
-import { pubsub } from '../utils/pubsub';
 import { consumeVoiceProducer } from './actions/consume-voice-producer';
 import { createPluginMessage } from './actions/create-plugin-message';
 import { deletePluginMessage } from './actions/delete-plugin-message';
@@ -126,7 +121,7 @@ const createStream = (
 ): TExternalStreamHandle => {
   const channel = getPluginVoiceRuntime(options.channelId);
 
-  const streamId = channel.createExternalStream({
+  const streamId = createExternalStream(channel, {
     title: options.title,
     key: options.key,
     pluginId,
@@ -135,27 +130,6 @@ const createStream = (
     producers: options.producers,
     videoLayers: options.videoLayers
   });
-
-  const stream = channel.getState().externalStreams[streamId]!;
-
-  pubsub.publish(ServerEvents.VOICE_ADD_EXTERNAL_STREAM, {
-    channelId: options.channelId,
-    streamId,
-    stream
-  });
-
-  for (const [kind, producer] of [
-    [StreamKind.EXTERNAL_AUDIO, options.producers.audio],
-    [StreamKind.EXTERNAL_VIDEO, options.producers.video]
-  ] as const) {
-    if (!producer) continue;
-
-    pubsub.publishForChannel(
-      options.channelId,
-      ServerEvents.VOICE_NEW_PRODUCER,
-      { channelId: options.channelId, remoteId: streamId, kind }
-    );
-  }
 
   const label = `'${options.title}' (key: ${options.key}, id: ${streamId})`;
 

@@ -7,6 +7,7 @@ import {
   Keyboard,
   KeyRound,
   Package,
+  Radio,
   SlidersHorizontal,
   User
 } from 'lucide-react';
@@ -21,6 +22,7 @@ import { Notifications } from './notifications';
 import { Others } from './others';
 import { Password } from './password';
 import { Profile } from './profile';
+import { Streaming } from './streaming';
 
 type TUserSettingsProps = TServerScreenBaseProps & {
   initialEntryId?: string;
@@ -50,6 +52,12 @@ const UserSettings = memo(({ close, initialEntryId }: TUserSettingsProps) => {
         label: t('hotkeysTab'),
         icon: Keyboard,
         content: <Hotkeys />
+      },
+      {
+        id: 'streaming',
+        label: t('streamingTab'),
+        icon: Radio,
+        content: <Streaming />
       },
       {
         id: 'password',

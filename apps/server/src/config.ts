@@ -91,7 +91,9 @@ const zConfig = z.object({
     pluginExecute: zRateLimiter,
     pluginInstall: zRateLimiter,
     pluginRoute: zRateLimiter,
-    oidc: zRateLimiter
+    oidc: zRateLimiter,
+    streamKey: zRateLimiter,
+    whip: zRateLimiter
   })
 });
 
@@ -223,6 +225,15 @@ const defaultConfig: TConfig = {
     },
     oidc: {
       maxRequests: 30,
+      windowMs: 60_000
+    },
+    streamKey: {
+      maxRequests: 5,
+      windowMs: 60_000
+    },
+    // obs retries a refused stream on its own, so this has room for a few reconnects
+    whip: {
+      maxRequests: 20,
       windowMs: 60_000
     }
   }

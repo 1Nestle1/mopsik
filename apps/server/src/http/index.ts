@@ -32,6 +32,11 @@ import { runPluginRoute } from './plugin-route';
 import { pluginsComponentsRouteHandler } from './plugins-components';
 import { publicRouteHandler } from './public';
 import { uploadFileRouteHandler } from './upload';
+import {
+  whipDeleteRouteHandler,
+  whipPatchRouteHandler,
+  whipPostRouteHandler
+} from './whip';
 
 // parsed once per request and handed to every handler, so nothing below re-parses the url
 // or re-resolves the client ip
@@ -94,9 +99,22 @@ const routeHandlers: Partial<
       '/upload': uploadFileRouteHandler,
       '/login': loginRouteHandler,
       '/oidc/exchange': oidcExchangeRouteHandler,
-      '/oidc/backchannel-logout': oidcBackchannelLogoutRouteHandler
+      '/oidc/backchannel-logout': oidcBackchannelLogoutRouteHandler,
+      '/whip': whipPostRouteHandler
     },
     prefix: {}
+  },
+  DELETE: {
+    exact: {},
+    prefix: {
+      '/whip': whipDeleteRouteHandler
+    }
+  },
+  PATCH: {
+    exact: {},
+    prefix: {
+      '/whip': whipPatchRouteHandler
+    }
   }
 };
 

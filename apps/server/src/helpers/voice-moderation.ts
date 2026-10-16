@@ -12,6 +12,7 @@ import { VoiceRuntime } from '../runtimes/voice';
 import { invariant } from '../utils/invariant';
 import { pubsub } from '../utils/pubsub';
 import { grantVoiceMove } from './voice-move-grants';
+import { endVoiceSession } from './voice-sessions';
 
 const loadVoiceMoveDestination = async (channelId: number) => {
   const channel = await db
@@ -95,12 +96,8 @@ const moveVoiceUser = async (userId: number, channelId: number) => {
 const disconnectVoiceUser = async (userId: number) => {
   const runtime = await findModeratableVoiceRuntime(userId);
 
-  runtime.removeUser(userId);
-
-  pubsub.publish(ServerEvents.USER_LEAVE_VOICE, {
-    channelId: runtime.id,
-    userId
-  });
+  // through the session owner, so the socket that held the call stops being its owner too
+  endVoiceSession(userId);
 
   await unpublishHiddenChannelFromUser(userId, runtime.id);
 };

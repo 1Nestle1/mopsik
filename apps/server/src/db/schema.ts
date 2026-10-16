@@ -557,6 +557,20 @@ const oidcHandoffs = sqliteTable(
   (t) => [index('oidc_handoffs_expires_idx').on(t.expiresAt)]
 );
 
+// one key per user. only a hash is kept, so a copy of the database can't be used to stream
+// as someone else; the key itself is shown once, when it is created
+const streamKeys = sqliteTable(
+  'stream_keys',
+  {
+    userId: integer('user_id')
+      .primaryKey()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    keyHash: text('key_hash').notNull(),
+    createdAt: integer('created_at').notNull()
+  },
+  (t) => [uniqueIndex('stream_keys_key_hash_idx').on(t.keyHash)]
+);
+
 const pluginData = sqliteTable('plugin_data', {
   pluginId: text('plugin_id').notNull().primaryKey(),
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
@@ -654,6 +668,7 @@ export {
   rolePermissions,
   roles,
   settings,
+  streamKeys,
   userRoles,
   users
 };

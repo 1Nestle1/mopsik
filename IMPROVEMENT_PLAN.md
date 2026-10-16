@@ -119,13 +119,13 @@ One menu everywhere a user appears: member list, message author, voice row, voic
   - "Optimize for": **Motion** (games, video: keeps the frame rate, lowers sharpness under load) or **Detail** (text, code: keeps it sharp, may lower the frame rate). Motion is the default.
   - Quality presets: Smooth 720p60, Sharp 1080p30, Best 1080p60, plus the existing manual settings.
   - Auto codec picks H.264 for Motion, which most graphics cards encode in hardware, so less CPU and fewer dropped frames.
-- **4.2 OBS ingest over WHIP (server), M to L:**
+- **4.2 OBS ingest over WHIP (server), M to L: done (local), tested end to end** (a browser WHIP client streamed into a call and a viewer saw it play):
   - WHIP is the standard way for OBS 30+ to push a WebRTC stream: one HTTPS request with an SDP offer.
   - New server endpoint `/whip`. The stream goes into the voice channel you are in, as a card titled with your name, with sub-second delay for viewers.
   - Personal stream key in User settings → Streaming (regenerate any time). Needs the Share screen permission.
   - SDP handling with `sdp-transform` (already a dependency). The official `mediasoup-sdp-bridge` was never published to npm (the name there is a security placeholder), so we don't use it.
   - Server upload ≈ stream bitrate × viewers: 6 Mbps × 5 friends = 30 Mbps.
-- **4.3 OBS guide, S:** settings page shows the URL and key, with a short "Set up OBS" guide (Service: WHIP, x264 or NVENC, Opus audio, CBR). Works on day one.
+- **4.3 OBS guide, S: done (local), en + ru.** Settings page shows the URL and key, with a short "Set up OBS" guide (Service: WHIP, x264 or NVENC, Opus audio, CBR). Works on day one.
 - **4.4 "MOPSCORD Stream" small app, L:**
   - First a single GStreamer command proves it: window capture, that app's sound only (Windows 11), GPU H.264 encoding, sent to the same `/whip` endpoint.
   - Then a tiny Tauri window: pick an app, Start / Stop. Could later grow into a desktop client with global push-to-talk.
@@ -139,9 +139,9 @@ One menu everywhere a user appears: member list, message author, voice row, voic
 Ranked by value for a friends group divided by effort, voice first. Upstream votes in brackets.
 
 **Core quality (small to medium):**
-1. **Merge upstream push-to-talk and hotkeys** ([#875](https://github.com/sharkord/sharkord/pull/875)) and the new plugin SDK. Their changes touch files we reworked, so the sooner the easier. M
+1. **Merge upstream push-to-talk and hotkeys** ([#875](https://github.com/sharkord/sharkord/pull/875)) and the new plugin SDK: **done (local)**. It came with server mute (shown as an amber mic), plugin storage, and the Bridge tray app for push-to-talk while in a game. Merged before our own migration so drizzle applies upstream's 0036 and 0037 first.
 2. **Volume up to 200% per person** (+9, [#201](https://github.com/sharkord/sharkord/issues/201)): Web Audio gain instead of the audio element's volume. S to M
-3. **Server mute / deafen and timeout** (rest of step 3b). M
+3. **Server mute in the right-click menu** (upstream added server mute for plugins, so this is mostly UI), then deafen and timeout. M
 4. **Custom status and a voice channel status** (+8, [#242](https://github.com/sharkord/sharkord/issues/242)): "In a match", "AFK", or "Dota 2" shown on the room. M
 5. **Basic Markdown** (+15, [#401](https://github.com/sharkord/sharkord/issues/401)): check what the editor already supports, fill the gaps. S to M
 6. **Nightly backup of Sharkord's data on the server** with a week of copies. S, needs the server owner's OK

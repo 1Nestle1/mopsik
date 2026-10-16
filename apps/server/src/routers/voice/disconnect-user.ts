@@ -3,11 +3,10 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { config } from '../../config';
 import { db } from '../../db';
-import { unpublishHiddenChannelFromUser } from '../../db/publishers';
 import { channels } from '../../db/schema';
 import { assertCanActOnUser } from '../../helpers/assert-can-act-on-user';
 import { assertChannelAccess } from '../../helpers/assert-channel-access';
-import { endVoiceSession } from '../../helpers/voice-sessions';
+import { disconnectVoiceUser } from '../../helpers/voice-moderation';
 import { logger } from '../../logger';
 import { VoiceRuntime } from '../../runtimes/voice';
 import { invariant } from '../../utils/invariant';
@@ -53,9 +52,7 @@ const disconnectUserRoute = rateLimitedProcedure(protectedProcedure, {
 
     // the client takes its own departure from the server as the end of the call and does not
     // try to rejoin, the same way it handles the channel being deleted under it
-    endVoiceSession(input.userId);
-
-    await unpublishHiddenChannelFromUser(input.userId, runtime.id);
+    await disconnectVoiceUser(input.userId);
 
     logger.info(
       '%s disconnected user %s from voice channel %s',
