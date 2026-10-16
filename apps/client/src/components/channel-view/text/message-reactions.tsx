@@ -77,11 +77,13 @@ const Reaction = memo(
       >
         <Button
           size="sm"
-          variant="outline"
+          variant="ghost"
           onClick={handleClick}
           className={cn(
-            'flex items-center gap-1 h-9',
-            isUserReacted ? 'border-border' : 'border-none'
+            'flex items-center gap-1 h-8 border-transparent',
+            isUserReacted
+              ? 'bg-primary/15 hover:bg-primary/25'
+              : 'bg-foreground/[0.06] hover:bg-foreground/[0.1]'
           )}
         >
           <Emoji emoji={emoji} file={file} />

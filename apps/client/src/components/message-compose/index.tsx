@@ -260,7 +260,7 @@ const MessageCompose = memo(
     return (
       <div
         ref={containerRef}
-        className="compose-container relative shrink-0 min-h-14 flex flex-col pb-[env(safe-area-inset-bottom)] bg-white/[0.03]"
+        className="compose-container relative shrink-0 min-h-14 mx-3 mb-3 flex flex-col overflow-hidden rounded-2xl bg-card pb-[env(safe-area-inset-bottom)]"
       >
         <UsersTypingIndicator typingUsers={typingUsers} />
 
@@ -270,7 +270,7 @@ const MessageCompose = memo(
         >
           <div className="flex flex-1 flex-col">
             {replyTarget && (
-              <div className="flex items-center justify-between rounded-md border border-border/60 bg-secondary/40 mx-2 mt-3 px-2 py-1 text-xs">
+              <div className="flex items-center justify-between rounded-full bg-secondary/60 mx-2 mt-2 pl-3 pr-1 py-1 text-xs">
                 <div className="min-w-0 flex items-center gap-1.5 text-muted-foreground">
                   <Reply className="h-3.5 w-3.5 shrink-0" />
                   <span>{t('replyingTo', { username: replyAuthorName })}</span>
@@ -338,6 +338,8 @@ const MessageCompose = memo(
                 size="icon"
                 variant="ghost"
                 disabled={uploading || !canSendMessages}
+                title={t('composeEmoji')}
+                aria-label={t('composeEmoji')}
               >
                 <Smile className="h-4 w-4" />
               </Button>
@@ -347,6 +349,8 @@ const MessageCompose = memo(
               variant="ghost"
               disabled={uploading || !canUploadFiles}
               onClick={openFileDialog}
+              title={t('composeAttach')}
+              aria-label={t('composeAttach')}
             >
               <Paperclip className="h-4 w-4" />
             </Button>
@@ -355,6 +359,8 @@ const MessageCompose = memo(
               variant="ghost"
               onClick={handleSend}
               disabled={uploading || sending || !canSendMessages}
+              title={t('composeSend')}
+              aria-label={t('composeSend')}
             >
               <Send className="h-4 w-4" />
             </Button>

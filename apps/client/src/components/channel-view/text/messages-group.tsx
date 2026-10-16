@@ -2,7 +2,7 @@ import { PluginAvatar } from '@/components/plugin-avatar';
 import { RelativeTime } from '@/components/relative-time';
 import { UserAvatar } from '@/components/user-avatar';
 import { usePluginMetadata } from '@/features/server/plugins/hooks';
-import { useIsOwnUser, useUserById } from '@/features/server/users/hooks';
+import { useUserById } from '@/features/server/users/hooks';
 import { cn } from '@/lib/utils';
 import {
   DELETED_USER_IDENTITY_AND_NAME,
@@ -43,7 +43,6 @@ const MessagesGroup = memo(
     const pluginMetadata = usePluginMetadata(firstMessage.pluginId);
     const user = useUserById(firstMessage.userId);
     const date = new Date(firstMessage.createdAt);
-    const isOwnUser = useIsOwnUser(firstMessage.userId);
     const authorName = useMessageAuthorName(firstMessage);
     const isDeletedUser = user?.name === DELETED_USER_IDENTITY_AND_NAME;
     const isPluginMessage = !!firstMessage.pluginId;
@@ -60,13 +59,18 @@ const MessagesGroup = memo(
             className="h-10 w-10"
           />
         ) : (
-          <UserAvatar userId={user!.id} className="h-10 w-10" showUserPopover />
+          <UserAvatar
+            userId={user!.id}
+            className="h-10 w-10"
+            showUserPopover
+            showUserMenu
+          />
         )}
         <div className="flex min-w-0 flex-col w-full">
           <div className="flex gap-2 items-baseline pl-1 select-none">
             <span
               className={cn(
-                isOwnUser && 'font-bold',
+                'font-semibold',
                 isDeletedUser && 'line-through text-muted-foreground',
                 isPluginMessage && 'text-primary/80'
               )}
@@ -74,14 +78,14 @@ const MessagesGroup = memo(
               {authorName}
             </span>
             {isPluginMessage && (
-              <span className="inline-flex items-center rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary/60 uppercase tracking-wide">
+              <span className="inline-flex items-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-medium text-primary uppercase tracking-wide">
                 bot
               </span>
             )}
             <RelativeTime date={date}>
               {(relativeTime) => (
                 <span
-                  className="text-primary/60 text-xs"
+                  className="text-muted-foreground text-xs tabular-nums"
                   title={format(date, 'PPpp')}
                 >
                   {relativeTime}

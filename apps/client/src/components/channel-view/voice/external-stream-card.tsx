@@ -242,7 +242,7 @@ const ExternalStreamCard = memo(
           'size-full',
           isFullscreen
             ? 'rounded-none border-none'
-            : 'rounded overflow-hidden border border-border',
+            : 'rounded-xl overflow-hidden',
           (!isFullscreen || isOverlayVisible) && 'group/external-stream-card',
           className
         )}

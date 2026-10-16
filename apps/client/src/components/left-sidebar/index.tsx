@@ -12,7 +12,11 @@ import { memo } from 'react';
 import { Categories } from './categories';
 import { DirectMessages } from './direct-messages';
 import { DmButton } from './direct-messages/dm-button';
-import { useFollowVoiceMove, useRestoreLastSelectedChannel } from './hooks';
+import {
+  useFollowVoiceMove,
+  useRejoinVoiceAfterReconnect,
+  useRestoreLastSelectedChannel
+} from './hooks';
 import { PluginButtons } from './plugin-buttons';
 import { ServerDropdownMenu } from './server-dropdown';
 import { UserControl } from './user-control';
@@ -33,6 +37,7 @@ const LeftSidebar = memo(({ className }: TLeftSidebarProps) => {
 
   useRestoreLastSelectedChannel();
   useFollowVoiceMove();
+  useRejoinVoiceAfterReconnect();
 
   return (
     <ResizableSidebar
@@ -44,9 +49,9 @@ const LeftSidebar = memo(({ className }: TLeftSidebarProps) => {
       className={cn('h-full', className)}
       data-testid={TestId.LEFT_SIDEBAR}
     >
-      <div className="flex w-full justify-between h-12 items-center border-b border-border px-4">
+      <div className="flex w-full justify-between h-12 items-center px-4">
         <h2
-          className="font-semibold text-foreground truncate cursor-pointer"
+          className="text-[15px] font-semibold tracking-tight text-foreground truncate cursor-pointer"
           onClick={() => setSelectedChannelId(undefined)}
           data-testid={TestId.LEFT_SIDEBAR_SERVER_NAME}
         >

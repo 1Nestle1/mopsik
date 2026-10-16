@@ -34,6 +34,10 @@ const loadMediasoup = async () => {
     mediaSoupWorker = await mediasoup.createWorker(workerConfig);
   } catch (error) {
     logger.error('Failed to load mediasoup worker: %s', getErrorMessage(error));
+
+    // every voice route needs the worker, so booting without it only moves the failure to
+    // the first person who joins a call, behind a much less helpful error
+    throw error;
   } finally {
     restoreSpawn();
   }
@@ -41,7 +45,9 @@ const loadMediasoup = async () => {
   mediaSoupWorker.on('died', (error) => {
     logger.error('Mediasoup worker died: %s', getErrorMessage(error));
 
-    setTimeout(() => process.exit(0), 2000);
+    // a failure code, so a supervisor that restarts on failure (docker's on-failure, a
+    // systemd Restart=on-failure unit) brings the server back. 0 reads as a clean shutdown
+    setTimeout(() => process.exit(1), 2000);
   });
 
   logger.debug('Mediasoup worker loaded');
@@ -60,6 +66,23 @@ const loadMediasoup = async () => {
 
     logger.debug(
       `WebRtcServer created on port ${port} with announcedAddress ${announcedAddress}`
+    );
+  } else if (config.webRtc.announcedAddress) {
+    // a dev server with an announced address opts into lan testing: phones and laptops on
+    // the same wifi reach voice through that address instead of only this machine
+    const announcedAddress = config.webRtc.announcedAddress;
+
+    webRtcServer = await mediaSoupWorker.createWebRtcServer({
+      listenInfos: [
+        { protocol: 'udp', ip: '0.0.0.0', announcedAddress, port },
+        { protocol: 'tcp', ip: '0.0.0.0', announcedAddress, port }
+      ]
+    });
+
+    webRtcServerListenInfo = { ip: '0.0.0.0', announcedAddress };
+
+    logger.debug(
+      `WebRtcServer created on 0.0.0.0:${port} announcing ${announcedAddress} (dev mode)`
     );
   } else {
     webRtcServer = await mediaSoupWorker.createWebRtcServer({

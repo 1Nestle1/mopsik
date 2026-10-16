@@ -2,6 +2,7 @@ import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import { ResizableSidebar } from '@/components/resizable-sidebar';
 import { UserAvatar } from '@/components/user-avatar';
 import { useUsers } from '@/features/server/users/hooks';
+import { activateOnKey } from '@/helpers/activate-on-key';
 import { LocalStorageKey } from '@/helpers/storage';
 import { cn } from '@/lib/utils';
 import {
@@ -11,6 +12,7 @@ import {
 } from '@sharkord/shared';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { UserContextMenu } from '../context-menus/user';
 import { UserPopover } from '../user-popover';
 
 const MAX_USERS_TO_SHOW = 100;
@@ -29,25 +31,30 @@ const User = memo(({ userId, name, banned }: TUserProps) => {
 
   return (
     <UserPopover userId={userId}>
-      <div
-        data-testid={TestId.MEMBER_ITEM}
-        className="flex items-center gap-3 rounded px-2 py-1.5 hover:bg-accent select-none min-w-0"
-      >
-        <UserAvatar userId={userId} className="h-8 w-8 shrink-0" />
-        <span
-          className={cn(
-            'text-sm text-foreground truncate',
-            banned && 'line-through text-muted-foreground'
-          )}
+      <UserContextMenu userId={userId}>
+        <div
+          role="button"
+          tabIndex={0}
+          onKeyDown={activateOnKey}
+          data-testid={TestId.MEMBER_ITEM}
+          className="flex items-center gap-3 rounded-full cursor-pointer px-2 py-1.5 transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] select-none min-w-0"
         >
-          {name}
-        </span>
+          <UserAvatar userId={userId} className="h-8 w-8 shrink-0" />
+          <span
+            className={cn(
+              'text-sm text-foreground truncate',
+              banned && 'line-through text-muted-foreground'
+            )}
+          >
+            {name}
+          </span>
 
-        <PluginSlotRenderer
-          slotId={PluginSlot.MEMBER_LIST_ITEM}
-          props={pluginProps}
-        />
-      </div>
+          <PluginSlotRenderer
+            slotId={PluginSlot.MEMBER_LIST_ITEM}
+            props={pluginProps}
+          />
+        </div>
+      </UserContextMenu>
     </UserPopover>
   );
 });
@@ -85,7 +92,7 @@ const RightSidebar = memo(
         isOpen={isOpen}
         className={cn('h-full', className)}
       >
-        <div className="flex h-12 items-center border-b border-border px-4">
+        <div className="flex h-12 items-center px-4">
           <h3 className="text-sm font-semibold text-foreground">
             {t('membersHeader', { count: usersCount })}
           </h3>

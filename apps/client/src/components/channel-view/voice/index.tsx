@@ -6,6 +6,7 @@ import {
   useVoiceChannelExternalStreamsList
 } from '@/features/server/voice/hooks';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ControlsBar } from './controls-bar';
 import { ExternalStreamCard } from './external-stream-card';
 import { usePinCardController } from './hooks/use-pin-card-controller';
@@ -18,6 +19,7 @@ type TChannelProps = {
 };
 
 const VoiceChannel = memo(({ channelId }: TChannelProps) => {
+  const { t } = useTranslation('sidebar');
   const voiceUsers = useVoiceUsersByChannelId(channelId);
   const externalStreams = useVoiceChannelExternalStreamsList(channelId);
   const { pinnedCard, pinCard, unpinCard, isPinned } = usePinCardController();
@@ -120,12 +122,10 @@ const VoiceChannel = memo(({ channelId }: TChannelProps) => {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground text-lg mb-2">
-            No one in the voice channel
+          <p className="text-foreground text-lg font-medium mb-1">
+            {t('voiceEmptyTitle')}
           </p>
-          <p className="text-muted-foreground text-sm">
-            Join the voice channel to start a meeting
-          </p>
+          <p className="text-muted-foreground text-sm">{t('voiceEmptyHint')}</p>
         </div>
       </div>
     );

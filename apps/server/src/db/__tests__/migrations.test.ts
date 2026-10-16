@@ -100,6 +100,10 @@ const buildBrokenTailFolder = () => {
 };
 
 afterAll(() => {
+  // drizzle leaves prepared statements unfinalized, so close() only marks each connection
+  // for closing and the file stays open until they are collected. windows refuses to
+  // delete an open file, so collect them before removing the folder
+  Bun.gc(true);
   fs.rmSync(workDir, { recursive: true, force: true });
 });
 

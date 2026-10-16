@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import {
+  ChannelType,
   OWNER_ROLE_ID,
   PluginCapabilityType,
   PluginSlot,
@@ -43,7 +44,8 @@ import {
 } from './users/selectors';
 import {
   ownVoiceStateSelector,
-  voiceChannelStateSelector
+  voiceChannelStateSelector,
+  voiceMapSelector
 } from './voice/selectors';
 
 export const connectedSelector = (state: IRootState) => state.server.connected;
@@ -439,4 +441,40 @@ export const userSettingsPluginsSelector = createSelector(
 
     return plugins.length > 0 ? plugins : DEFAULT_USER_SETTINGS_PLUGINS;
   }
+);
+
+const LOUNGE_UNREAD_LIMIT = 6;
+
+// the home screen leads with the rooms people are in, busiest first, and offers the empty
+// ones as one-click starts
+export const referenceableVoiceChannelsSelector = createSelector(
+  [referenceableChannelsSelector],
+  (channels) => channels.filter((channel) => channel.type === ChannelType.VOICE)
+);
+
+export const loungeVoiceChannelsSelector = createSelector(
+  [referenceableVoiceChannelsSelector, voiceMapSelector],
+  (voiceChannels, voiceMap) => {
+    const occupancy = (channelId: number) =>
+      Object.keys(voiceMap[channelId]?.users ?? {}).length;
+
+    return {
+      active: voiceChannels
+        .filter((channel) => occupancy(channel.id) > 0)
+        .sort((a, b) => occupancy(b.id) - occupancy(a.id)),
+      idle: voiceChannels.filter((channel) => occupancy(channel.id) === 0)
+    };
+  }
+);
+
+export const unreadTextChannelsSelector = createSelector(
+  [referenceableChannelsSelector, channelsReadStatesSelector],
+  (channels, readStates) =>
+    channels
+      .filter(
+        (channel) =>
+          channel.type === ChannelType.TEXT && (readStates[channel.id] ?? 0) > 0
+      )
+      .sort((a, b) => (readStates[b.id] ?? 0) - (readStates[a.id] ?? 0))
+      .slice(0, LOUNGE_UNREAD_LIMIT)
 );

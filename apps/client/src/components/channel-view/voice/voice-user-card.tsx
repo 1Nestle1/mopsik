@@ -1,3 +1,4 @@
+import { UserContextMenu } from '@/components/context-menus/user';
 import { useDevices } from '@/components/devices-provider/hooks/use-devices';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import { UserAvatar } from '@/components/user-avatar';
@@ -11,6 +12,7 @@ import {
   useVoice
 } from '@/features/server/voice/hooks';
 import { getFileUrl } from '@/helpers/get-file-url';
+import { getUserTone } from '@/helpers/get-user-tone';
 import { cn } from '@/lib/utils';
 import { PluginSlot, StreamKind } from '@sharkord/shared';
 import { HeadphoneOff, MicOff, Monitor, Video } from 'lucide-react';
@@ -87,6 +89,8 @@ const VoiceUserCard = memo(
       [channelId, userId]
     );
 
+    const toneColor = useMemo(() => getUserTone(userId), [userId]);
+
     const backgroundStyle = useMemo(
       () =>
         hasVideoStream
@@ -96,154 +100,145 @@ const VoiceUserCard = memo(
     );
 
     return (
-      <div
-        className={cn(
-          'relative bg-card rounded overflow-hidden group/voice-user-card',
-          'flex items-center justify-center',
-          'size-full',
-          'border border-border',
-          isActivelySpeaking && speakingEffectClass,
-          className
-        )}
-      >
-        {voiceUser.banner && showUserBanners ? (
-          <div
-            className="h-full w-full rounded bg-center bg-cover blur-sm brightness-50 bg-no-repeat absolute inset-0"
-            style={backgroundStyle}
-          />
-        ) : (
-          <CardTheme
-            profileColor={voiceUser.profileColor}
-            hasVideoStream={hasVideoStream}
-          />
-        )}
-
-        {hasVideoStream && (
-          <video
-            ref={videoRef}
-            autoPlay
-            muted
-            playsInline
-            className={cn(
-              'absolute inset-0 w-full h-full object-contain',
-              isOwnUser && devices.mirrorOwnVideo && '-scale-x-100'
-            )}
-          />
-        )}
-        {!hasVideoStream && (
-          <UserAvatar
-            userId={userId}
-            className={cn(
-              'pointer-events-none',
-              isPinned
-                ? 'w-16 h-16 md:w-20 md:h-20 lg:w-32 lg:h-32'
-                : isCompact
-                  ? 'w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14'
-                  : 'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24'
-            )}
-            showStatusBadge={false}
-          />
-        )}
-
-        <VoiceReactions userId={userId} isCompact={isCompact} />
-
+      <UserContextMenu userId={userId}>
         <div
           className={cn(
-            'absolute top-0 left-0 z-10 flex items-center gap-1',
-            density.inset
+            'relative bg-card rounded-xl overflow-hidden group/voice-user-card',
+            'flex items-center justify-center',
+            'size-full',
+            isActivelySpeaking && speakingEffectClass,
+            className
           )}
         >
-          <PluginSlotRenderer
-            slotId={PluginSlot.VOICE_USER_CARD}
-            props={pluginSlotProps}
-          />
-        </div>
-
-        <div
-          className={cn(
-            'absolute top-0 right-0 z-10 justify-end',
-            density.inset,
-            'hidden group-hover/voice-user-card:flex',
-            'has-[[data-state=open]]:flex'
+          {voiceUser.banner && showUserBanners ? (
+            <div
+              className="h-full w-full bg-center bg-cover blur-sm brightness-50 bg-no-repeat absolute inset-0"
+              style={backgroundStyle}
+            />
+          ) : (
+            <CardTheme
+              profileColor={voiceUser.profileColor}
+              toneColor={toneColor}
+              hasVideoStream={hasVideoStream}
+            />
           )}
-        >
-          <div className={cardControlsClass(isCompact)}>
-            {!isOwnUser && (
-              <VolumeButton
-                volumeKey={volumeKey}
-                size={density.icon}
-                className={cardControlClass()}
-              />
-            )}
-            {showQualityControl && (
-              <QualityButton
-                streamId={userId}
-                kind={StreamKind.VIDEO}
-                disabled={!isSimulcastConsumer(userId, StreamKind.VIDEO)}
-                size={density.icon}
-                className={cardControlClass()}
-              />
-            )}
-            {hasVideoStream && (
-              <PictureInPictureButton
-                videoRef={videoRef}
-                size={density.icon}
-                className={cardControlClass()}
-              />
-            )}
-            {showPinControls && (
-              <PinButton
-                isPinned={isPinned}
-                handlePinToggle={handlePinToggle}
-                size={density.icon}
-                className={cardControlClass(isPinned)}
-              />
-            )}
-          </div>
-        </div>
 
-        <div
-          className={cn('absolute bottom-0 left-0 right-0 flex', density.inset)}
-        >
+          {hasVideoStream && (
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              playsInline
+              className={cn(
+                'absolute inset-0 w-full h-full object-contain',
+                isOwnUser && devices.mirrorOwnVideo && '-scale-x-100'
+              )}
+            />
+          )}
+          {!hasVideoStream && (
+            <UserAvatar
+              userId={userId}
+              className={cn(
+                'pointer-events-none',
+                isPinned
+                  ? 'w-16 h-16 md:w-20 md:h-20 lg:w-32 lg:h-32'
+                  : isCompact
+                    ? 'w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14'
+                    : 'w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24'
+              )}
+              showStatusBadge={false}
+            />
+          )}
+
+          <VoiceReactions userId={userId} isCompact={isCompact} />
+
           <div
             className={cn(
-              cardBadgeClass(isCompact),
-              !voiceUser.state.micMuted &&
-                !voiceUser.state.soundMuted &&
-                !voiceUser.state.webcamEnabled &&
-                !voiceUser.state.sharingScreen &&
-                'hidden group-hover/voice-stage:inline-flex'
+              'absolute top-0 left-0 z-10 flex items-center gap-1',
+              density.inset
             )}
           >
-            {voiceUser.state.micMuted && !voiceUser.state.soundMuted && (
-              <MicOff
-                className="text-red-400/80 shrink-0 size-3"
-                fill="currentColor"
-              />
+            <PluginSlotRenderer
+              slotId={PluginSlot.VOICE_USER_CARD}
+              props={pluginSlotProps}
+            />
+          </div>
+
+          <div
+            className={cn(
+              'absolute top-0 right-0 z-10 justify-end',
+              density.inset,
+              'hidden group-hover/voice-user-card:flex',
+              'has-[[data-state=open]]:flex'
             )}
-            {voiceUser.state.soundMuted && (
-              <HeadphoneOff
-                className="text-red-400/80 size-3"
-                fill="currentColor"
-              />
-            )}
-            {voiceUser.state.webcamEnabled && (
-              <Video className="text-white/80 size-3" fill="currentColor" />
-            )}
-            {voiceUser.state.sharingScreen && (
-              <Monitor className="text-white/80 size-3" />
-            )}
-            <p
-              className={cn(
-                'hidden group-hover/voice-stage:block truncate leading-none',
-                density.label
+          >
+            <div className={cardControlsClass(isCompact)}>
+              {!isOwnUser && (
+                <VolumeButton
+                  volumeKey={volumeKey}
+                  size={density.icon}
+                  className={cardControlClass()}
+                />
               )}
-            >
-              {voiceUser.name}
-            </p>
+              {showQualityControl && (
+                <QualityButton
+                  streamId={userId}
+                  kind={StreamKind.VIDEO}
+                  disabled={!isSimulcastConsumer(userId, StreamKind.VIDEO)}
+                  size={density.icon}
+                  className={cardControlClass()}
+                />
+              )}
+              {hasVideoStream && (
+                <PictureInPictureButton
+                  videoRef={videoRef}
+                  size={density.icon}
+                  className={cardControlClass()}
+                />
+              )}
+              {showPinControls && (
+                <PinButton
+                  isPinned={isPinned}
+                  handlePinToggle={handlePinToggle}
+                  size={density.icon}
+                  className={cardControlClass(isPinned)}
+                />
+              )}
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              'absolute bottom-0 left-0 right-0 flex',
+              density.inset
+            )}
+          >
+            <div className={cardBadgeClass(isCompact)}>
+              {voiceUser.state.micMuted && !voiceUser.state.soundMuted && (
+                <MicOff
+                  className="text-destructive shrink-0 size-3"
+                  fill="currentColor"
+                />
+              )}
+              {voiceUser.state.soundMuted && (
+                <HeadphoneOff
+                  className="text-destructive size-3"
+                  fill="currentColor"
+                />
+              )}
+              {voiceUser.state.webcamEnabled && (
+                <Video className="text-primary size-3" fill="currentColor" />
+              )}
+              {voiceUser.state.sharingScreen && (
+                <Monitor className="text-primary size-3" />
+              )}
+              <p className={cn('truncate leading-none', density.label)}>
+                {voiceUser.name}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </UserContextMenu>
     );
   }
 );

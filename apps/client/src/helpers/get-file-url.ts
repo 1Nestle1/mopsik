@@ -1,8 +1,12 @@
 import type { TFile } from '@sharkord/shared';
 
+// in development the api runs on its own port next to vite. using the hostname the page was
+// opened with, instead of localhost, lets a phone or laptop on the same wifi reach it too
+const DEV_SERVER_PORT = 4991;
+
 const getHostFromServer = () => {
   if (import.meta.env.MODE === 'development') {
-    return 'localhost:4991';
+    return `${window.location.hostname}:${DEV_SERVER_PORT}`;
   }
 
   return window.location.host;
@@ -10,7 +14,7 @@ const getHostFromServer = () => {
 
 const getUrlFromServer = () => {
   if (import.meta.env.MODE === 'development') {
-    return 'http://localhost:4991';
+    return `http://${window.location.hostname}:${DEV_SERVER_PORT}`;
   }
 
   const host = window.location.host;

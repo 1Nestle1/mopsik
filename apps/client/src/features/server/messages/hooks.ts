@@ -5,6 +5,7 @@ import {
   type TJoinedMessage,
   type TMessagesCursor
 } from '@sharkord/shared';
+import { isSameDay } from 'date-fns';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import {
@@ -34,6 +35,8 @@ export const useMessagesByChannelId = (channelId: number) =>
 export type TMessageGroup = {
   key: string;
   messages: TJoinedMessage[];
+  // the list draws a day divider above a group that opens a new calendar day
+  startsNewDay: boolean;
 };
 
 const useGroupedMessages = (messages: TJoinedMessage[]) =>
@@ -46,13 +49,15 @@ const useGroupedMessages = (messages: TJoinedMessage[]) =>
       if (!lastGroup) {
         grouped.push({
           key: `${message.id}`,
-          messages: [message]
+          messages: [message],
+          startsNewDay: true
         });
 
         continue;
       }
 
       const lastMessage = lastGroup.messages[lastGroup.messages.length - 1];
+      const startsNewDay = !isSameDay(lastMessage.createdAt, message.createdAt);
 
       const hasInlineReply =
         !!message.replyToMessageId || !!lastMessage.replyToMessageId;
@@ -61,7 +66,8 @@ const useGroupedMessages = (messages: TJoinedMessage[]) =>
       if (hasInlineReply) {
         grouped.push({
           key: `${message.id}`,
-          messages: [message]
+          messages: [message],
+          startsNewDay
         });
 
         continue;
@@ -74,7 +80,8 @@ const useGroupedMessages = (messages: TJoinedMessage[]) =>
       if (!sameAuthor) {
         grouped.push({
           key: `${message.id}`,
-          messages: [message]
+          messages: [message],
+          startsNewDay
         });
 
         continue;
@@ -84,7 +91,7 @@ const useGroupedMessages = (messages: TJoinedMessage[]) =>
       const currentDate = message.createdAt;
       const timeDifference = Math.abs(currentDate - lastDate) / 1000 / 60;
 
-      if (timeDifference < 1) {
+      if (timeDifference < 1 && !startsNewDay) {
         lastGroup.messages.push(message);
 
         continue;
@@ -92,7 +99,8 @@ const useGroupedMessages = (messages: TJoinedMessage[]) =>
 
       grouped.push({
         key: `${message.id}`,
-        messages: [message]
+        messages: [message],
+        startsNewDay
       });
     }
 

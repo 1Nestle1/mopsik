@@ -52,6 +52,8 @@ export const addUserToVoiceChannel = (
   }
 };
 
+let pendingJoinChannelId: number | undefined;
+
 const clearLocalVoiceSession = (): void => {
   const state = store.getState();
 
@@ -90,6 +92,11 @@ export const removeUserFromVoiceChannel = (
   // deleted, its category was, or the runtime was destroyed. without this the call ends but
   // the app goes on showing the user as connected to a channel that no longer exists
   if (userId === ownUserId) {
+    // a join in flight takes over an older session of ours (a reconnect, or this account on
+    // another device), and the server ends that one before answering. its departure is not
+    // the session being set up here
+    if (channelId === pendingJoinChannelId) return;
+
     logVoice('session: removed from voice by the server', { channelId });
 
     clearLocalVoiceSession();
@@ -211,6 +218,8 @@ export const joinVoice = async (
 
   logVoice('session: join requested', { channelId, micMuted, soundMuted });
 
+  pendingJoinChannelId = channelId;
+
   try {
     const client = getTRPCClient();
 
@@ -227,9 +236,32 @@ export const joinVoice = async (
     clearLocalVoiceSession();
 
     toast.error(getTrpcError(error, i18n.t('common:failedJoinVoiceChannel')));
+  } finally {
+    if (pendingJoinChannelId === channelId) {
+      pendingJoinChannelId = undefined;
+    }
   }
 
   return undefined;
+};
+
+// for when the call cannot be carried on as it is: the socket that owned the session dropped
+// (the server ends it once it notices), or the media transports could not be repaired. this
+// lets go of the local half and asks for a fresh join, without leaving the channel view the
+// user is looking at
+export const rejoinVoice = (channelId: number): void => {
+  logVoice('session: rejoining', { channelId });
+
+  setCurrentVoiceChannelId(undefined);
+  updateOwnVoiceState({ webcamEnabled: false, sharingScreen: false });
+  setPinnedCard(undefined);
+  setVoiceRejoinChannelId(channelId);
+};
+
+export const setVoiceRejoinChannelId = (
+  channelId: number | undefined
+): void => {
+  store.dispatch(serverSliceActions.setVoiceRejoinChannelId(channelId));
 };
 
 export type TLeaveVoiceReason =
@@ -325,5 +357,19 @@ export const setAlwaysShowVoiceControls = (value: boolean): void => {
     setLocalStorageItemBool(LocalStorageKey.ALWAYS_SHOW_VOICE_CONTROLS, value);
   } catch (error) {
     console.error('Failed to save voice options:', error);
+  }
+};
+
+// shared by dragging someone onto a channel in the sidebar and the user menu's move to
+export const moveUserToVoiceChannel = async (
+  userId: number,
+  channelId: number
+) => {
+  try {
+    const trpc = getTRPCClient();
+
+    await trpc.voice.moveUser.mutate({ userId, channelId });
+  } catch (error) {
+    toast.error(getTrpcError(error, i18n.t('sidebar:failedMoveUser')));
   }
 };

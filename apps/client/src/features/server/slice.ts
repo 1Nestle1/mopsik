@@ -49,6 +49,8 @@ export interface IServerState {
   currentVoiceChannelId: number | undefined;
   // it lives here rather than in the subscription because joining the new room needs the voice provider context
   voiceMoveTargetChannelId: number | undefined;
+  // same reason: the rejoin after a reconnect needs the voice provider context too
+  voiceRejoinChannelId: number | undefined;
   messagesMap: TMessagesMap;
   detachedChannels: Record<number, boolean>;
   threadMessagesMap: TThreadMessagesMap;
@@ -101,6 +103,7 @@ const initialState: IServerState = {
   selectedChannelId: undefined,
   currentVoiceChannelId: undefined,
   voiceMoveTargetChannelId: undefined,
+  voiceRejoinChannelId: undefined,
   messagesMap: {},
   detachedChannels: {},
   threadMessagesMap: {},
@@ -674,6 +677,12 @@ export const serverSlice = createSlice({
       action: PayloadAction<number | undefined>
     ) => {
       state.voiceMoveTargetChannelId = action.payload;
+    },
+    setVoiceRejoinChannelId: (
+      state,
+      action: PayloadAction<number | undefined>
+    ) => {
+      state.voiceRejoinChannelId = action.payload;
     },
     setChannelPermissions: (
       state,

@@ -22,6 +22,8 @@ import {
   VideoOff
 } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useMicFailureCopy } from '../../voice-provider/hooks/use-mic-failure-copy';
 import { ControlToggleButton } from './control-toggle-button';
 import { ReactionsButton } from './reactions-button';
 
@@ -30,14 +32,21 @@ type TControlsBarProps = {
 };
 
 const ControlsBar = memo(({ channelId }: TControlsBarProps) => {
+  const { t } = useTranslation('sidebar');
   const {
     toggleMic,
     toggleSound,
     toggleWebcam,
     toggleScreenShare,
-    isScreenShareSupported
+    isScreenShareSupported,
+    micState,
+    retryMic
   } = useVoice();
   const ownVoiceState = useOwnVoiceState();
+  const micFailure = useMicFailureCopy(micState.status);
+  const micRetryLabel = micFailure
+    ? t('micUnavailableRetry', { reason: micFailure.title })
+    : '';
   const channelCan = useChannelCan(channelId);
   const alwaysShowControls = useAlwaysShowVoiceControls();
   const isConnectedToThisChannel = useIsCurrentVoiceChannelSelected();
@@ -69,40 +78,53 @@ const ControlsBar = memo(({ channelId }: TControlsBarProps) => {
       <div
         className={cn(
           'flex items-center pointer-events-auto p-1.5',
-          'gap-2 rounded border shadow-xl',
-          'bg-card border-border/50 backdrop-blur-md'
+          'gap-1.5 rounded-full shadow-lg shadow-black/30',
+          'bg-popover/90 backdrop-blur-md'
         )}
       >
-        <ControlToggleButton
-          enabled={ownVoiceState.micMuted}
-          enabledLabel="Unmute"
-          disabledLabel="Mute"
-          enabledIcon={MicOff}
-          disabledIcon={Mic}
-          enabledClassName="bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500"
-          onClick={toggleMic}
-          disabled={!permissions.canSpeak || ownVoiceState.soundMuted}
-        />
+        {micFailure ? (
+          <ControlToggleButton
+            enabled
+            enabledLabel={micRetryLabel}
+            disabledLabel={micRetryLabel}
+            enabledIcon={MicOff}
+            disabledIcon={MicOff}
+            enabledClassName="bg-warning/15 text-warning hover:bg-warning/25 hover:text-warning"
+            onClick={retryMic}
+            disabled={!permissions.canSpeak}
+          />
+        ) : (
+          <ControlToggleButton
+            enabled={ownVoiceState.micMuted}
+            enabledLabel={t('unmuteMic')}
+            disabledLabel={t('muteMic')}
+            enabledIcon={MicOff}
+            disabledIcon={Mic}
+            enabledClassName="bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive"
+            onClick={toggleMic}
+            disabled={!permissions.canSpeak || ownVoiceState.soundMuted}
+          />
+        )}
 
         <ControlToggleButton
           enabled={ownVoiceState.soundMuted}
-          enabledLabel="Undeafen"
-          disabledLabel="Deafen"
+          enabledLabel={t('undeafen')}
+          disabledLabel={t('deafen')}
           enabledIcon={HeadphoneOff}
           disabledIcon={Headphones}
-          enabledClassName="bg-red-500/20 text-red-500 hover:bg-red-500/30 hover:text-red-500"
+          enabledClassName="bg-destructive/15 text-destructive hover:bg-destructive/25 hover:text-destructive"
           onClick={toggleSound}
         />
 
-        <div className="h-8 border-r-2 border-border" />
+        <div className="mx-0.5 h-6 w-px bg-border" />
 
         <ControlToggleButton
           enabled={ownVoiceState.webcamEnabled}
-          enabledLabel="Stop Video"
-          disabledLabel="Start Video"
+          enabledLabel={t('turnOffCamera')}
+          disabledLabel={t('turnOnCamera')}
           enabledIcon={Video}
           disabledIcon={VideoOff}
-          enabledClassName="bg-green-500/20 text-green-500 hover:bg-green-500/30 hover:text-green-500"
+          enabledClassName="bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary"
           onClick={toggleWebcam}
           disabled={!permissions.canWebcam}
         />
@@ -110,11 +132,11 @@ const ControlsBar = memo(({ channelId }: TControlsBarProps) => {
         {isScreenShareSupported && (
           <ControlToggleButton
             enabled={ownVoiceState.sharingScreen}
-            enabledLabel="Stop Sharing"
-            disabledLabel="Share Screen"
+            enabledLabel={t('stopScreenShare')}
+            disabledLabel={t('startScreenShare')}
             enabledIcon={ScreenShareOff}
             disabledIcon={Monitor}
-            enabledClassName="bg-blue-500/20 text-blue-500 hover:bg-blue-500/30 hover:text-blue-500"
+            enabledClassName="bg-primary/15 text-primary hover:bg-primary/25 hover:text-primary"
             onClick={toggleScreenShare}
             disabled={!permissions.canShareScreen}
           />
@@ -122,21 +144,21 @@ const ControlsBar = memo(({ channelId }: TControlsBarProps) => {
 
         {isConnectedToThisChannel && (
           <Protect permission={Permission.SEND_VOICE_REACTION}>
-            <div className="h-8 border-r-2 border-border" />
+            <div className="mx-0.5 h-6 w-px bg-border" />
 
             <ReactionsButton />
           </Protect>
         )}
       </div>
-      <Tooltip content="Disconnect">
+      <Tooltip content={t('disconnectVoice')}>
         <Button
           className={cn(
-            'inline-flex h-auto self-stretch min-w-11 items-center justify-center rounded px-3 border border-border',
-            'pointer-events-auto text-white shadow-xl transition-all',
-            'bg-[#ec4245] hover:bg-[#da373c]'
+            'inline-flex h-auto self-stretch min-w-12 items-center justify-center rounded-full px-4',
+            'pointer-events-auto text-white shadow-lg shadow-black/30',
+            'bg-destructive hover:bg-destructive/90'
           )}
           onClick={handleLeaveVoice}
-          aria-label="Disconnect"
+          aria-label={t('disconnectVoice')}
         >
           <PhoneOff className="size-4" fill="currentColor" />
         </Button>

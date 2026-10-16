@@ -17,6 +17,7 @@ type TSettingsShellProps = {
   close: () => void;
   entries: TSettingsEntry[];
   pluginEntries?: TSettingsEntry[];
+  initialEntryId?: string;
 };
 
 const NO_ENTRIES: TSettingsEntry[] = [];
@@ -26,10 +27,14 @@ const SettingsShell = memo(
     title,
     close,
     entries,
-    pluginEntries = NO_ENTRIES
+    pluginEntries = NO_ENTRIES,
+    initialEntryId
   }: TSettingsShellProps) => {
     const { t } = useTranslation('settings');
-    const [selectedId, setSelectedId] = useState(() => entries[0]?.id ?? '');
+    // an unknown id falls back to the first entry through selectedEntry below
+    const [selectedId, setSelectedId] = useState(
+      () => initialEntryId ?? entries[0]?.id ?? ''
+    );
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [form, setForm] = useState<TSettingsFormHandle | null>(null);
     const { isOpen: isModViewOpen } = useModViewOpen();
@@ -100,8 +105,13 @@ const SettingsShell = memo(
     return (
       <SettingsFormContext.Provider value={setForm}>
         <div className="flex h-dvh flex-col bg-background text-foreground dark">
-          <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
-            <Button variant="ghost" size="icon" onClick={handleClose}>
+          <div className="flex h-14 shrink-0 items-center gap-2 bg-sidebar px-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClose}
+              aria-label={t('closeSettings')}
+            >
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <h1 className="flex-1 truncate text-lg font-semibold">{title}</h1>
@@ -110,6 +120,7 @@ const SettingsShell = memo(
               variant="ghost"
               className="md:hidden"
               onClick={toggleDrawer}
+              aria-label={t('settingsSections')}
             />
           </div>
 

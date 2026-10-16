@@ -50,6 +50,7 @@ const ServerDropdownMenu = memo(() => {
       <DropdownMenuTrigger asChild>
         <Button
           data-testid={TestId.SERVER_MENU_TRIGGER}
+          aria-label={t('serverMenu')}
           variant="ghost"
           size="icon"
         >

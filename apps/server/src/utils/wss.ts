@@ -21,11 +21,14 @@ import { channelUserCan } from '../db/queries/channels';
 import { getUserRoles } from '../db/queries/roles';
 import { getUserById, getUserByToken } from '../db/queries/users';
 import { getWsInfo } from '../helpers/get-ws-info';
+import {
+  endVoiceSession,
+  isVoiceSessionOwner
+} from '../helpers/voice-sessions';
 import { logger } from '../logger';
 import { eventBus } from '../plugins/event-bus';
 import { enqueueActivityLog } from '../queues/activity-log';
 import { appRouter } from '../routers';
-import { VoiceRuntime } from '../runtimes/voice';
 import { invariant } from './invariant';
 import { pubsub } from './pubsub';
 import type { Context } from './trpc';
@@ -211,25 +214,24 @@ const handleSocketClose = async (ws: WebSocket) => {
 
     untrackUserSocket(userId, ws);
 
+    // before the early return below and before any await: the voice session ends with the
+    // socket that joined it, even while a reconnect or another tab keeps the user online,
+    // and a join racing in on the new socket must find it already gone
+    if (isVoiceSessionOwner(userId, ws)) {
+      endVoiceSession(userId);
+    }
+
     // only mark as offline when there are no other active sessions
     if (userSockets.has(userId)) {
       return;
     }
 
+    // a session nobody claimed has no socket to end with, so it ends with the user
+    endVoiceSession(userId);
+
     const user = await getUserById(userId);
 
     if (!user) return;
-
-    const voiceRuntime = VoiceRuntime.findRuntimeByUserId(user.id);
-
-    if (voiceRuntime) {
-      voiceRuntime.removeUser(user.id);
-
-      pubsub.publish(ServerEvents.USER_LEAVE_VOICE, {
-        channelId: voiceRuntime.id,
-        userId: user.id
-      });
-    }
 
     usersIpMap.delete(user.id);
     pubsub.publish(ServerEvents.USER_LEAVE, user.id);

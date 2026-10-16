@@ -125,7 +125,7 @@
   "screenCursorMotion": "Only when moving",
   "screenCursorNever": "Never show",
   "maxBitrateLabel": "Max Bitrate",
-  "screenSharingNote": "These screen sharing settings are best effort and may not be supported on all platforms or browsers, which means that in some cases the actual resolution, framerate or codec used may differ from the selected ones. In the end, is up to the browser to handle the screen sharing stream in the best way possible, based on the current system performance and network conditions.",
+  "screenSharingNote": "These screen sharing settings are best effort and may not be supported on all platforms or browsers, which means that in some cases the actual resolution, framerate or codec used may differ from the selected ones. In the end, it is up to the browser to handle the screen sharing stream in the best way possible, based on the current system performance and network conditions.",
   "deviceSettingsSaved": "Device settings saved",
   "serverInfoTitle": "Server Information",
   "serverInfoDesc": "Manage your server's basic information",
@@ -516,5 +516,7 @@
   "soundsLabel": "Notification Sounds",
   "soundsDesc": "Play sounds for messages, voice channel activity and connection changes.",
   "messageSentSoundLabel": "Message Sent Sound",
-  "messageSentSoundDesc": "Play a sound when you send a message."
+  "messageSentSoundDesc": "Play a sound when you send a message.",
+  "closeSettings": "Close settings",
+  "settingsSections": "Settings sections"
 }

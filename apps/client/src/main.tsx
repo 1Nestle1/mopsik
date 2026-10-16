@@ -1,4 +1,6 @@
 import { i18nReady } from '@/i18n';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/onest';
 import { Toaster } from '@sharkord/ui';
 import 'prosemirror-view/style/prosemirror.css';
 import { StrictMode } from 'react';

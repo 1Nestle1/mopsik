@@ -42,12 +42,12 @@ const SearchDialog = memo(({ isOpen, close }: TSearchDialogProps) => {
   return (
     <Dialog open={isOpen}>
       <DialogContent
-        className="h-[86vh] max-h-[94vh] lg:min-w-7xl gap-0 overflow-hidden p-0"
+        className="h-[min(86vh,760px)] gap-0 overflow-hidden p-0 sm:max-w-3xl"
         onInteractOutside={close}
         close={close}
       >
         <div className="flex h-full min-h-0 flex-col">
-          <DialogHeader className="border-b border-border bg-card/70 px-5 py-4 text-left">
+          <DialogHeader className="px-5 pt-5 pb-2 text-left">
             <DialogTitle className="text-base">{t('searchTitle')}</DialogTitle>
             <DialogDescription>{t('searchDesc')}</DialogDescription>
             <div className="mt-3">
@@ -109,7 +109,7 @@ const SearchDialog = memo(({ isOpen, close }: TSearchDialogProps) => {
 
                 <PaginatedList.Pagination
                   alwaysShow
-                  className="flex shrink-0 items-center justify-center gap-1 border-t border-border pt-3"
+                  className="flex shrink-0 items-center justify-center gap-1 pt-3"
                 />
 
                 {truncated && (

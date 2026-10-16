@@ -11,7 +11,7 @@ import { memo, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 const ONE_MINUTE = 60_000;
 const ONE_HOUR = 60 * ONE_MINUTE;
-const DEFAULT_FORMAT = 'PPpp'; // eg: 12 August 2022, 14:30
+const DEFAULT_FORMAT = 'PPp'; // eg: 12 August 2022, 14:30 (seconds only in the hover title)
 
 type TRelativeTimeProps = {
   date: Date | string;

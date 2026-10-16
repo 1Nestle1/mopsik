@@ -7,7 +7,7 @@ import {
 } from '@sharkord/shared';
 import { describe, expect, test } from 'bun:test';
 import { and, eq } from 'drizzle-orm';
-import { initTest } from '../../__tests__/helpers';
+import { createFakeSocket, initTest } from '../../__tests__/helpers';
 import { tdb } from '../../__tests__/setup';
 import { config } from '../../config';
 import {
@@ -232,9 +232,6 @@ describe('voice router', () => {
       const { caller: movedCaller } = await initTest(4);
 
       const originRuntime = new VoiceRuntime(2);
-      const destinationRuntime = new VoiceRuntime(PRIVATE_VOICE_CHANNEL_ID);
-
-      await destinationRuntime.init();
 
       originRuntime.addUser(4, { micMuted: false, soundMuted: false });
 
@@ -243,26 +240,30 @@ describe('voice router', () => {
         state: { micMuted: false, soundMuted: false }
       };
 
+      let destinationRuntime: VoiceRuntime | undefined;
+
       try {
         await ownerCaller.voice.moveUser({
           userId: 4,
           channelId: PRIVATE_VOICE_CHANNEL_ID
         });
 
-        // joining before leaving the origin call is refused, and must not spend the grant:
-        // the move the user was sent on is the retry that follows
+        // the destination has no runtime yet, so the join is refused after the grant was
+        // checked, and must not spend it: the move the user was sent on is the retry
         await expect(movedCaller.voice.join(joinInput)).rejects.toThrow(
-          'User already in a voice channel'
+          'Voice runtime not found for this channel'
         );
 
-        originRuntime.removeUser(4);
+        destinationRuntime = new VoiceRuntime(PRIVATE_VOICE_CHANNEL_ID);
+
+        await destinationRuntime.init();
 
         const result = await movedCaller.voice.join(joinInput);
 
         expect(result.routerRtpCapabilities).toBeDefined();
       } finally {
         await originRuntime.destroy();
-        await destinationRuntime.destroy();
+        await destinationRuntime?.destroy();
       }
     });
 
@@ -414,6 +415,171 @@ describe('voice router', () => {
     });
   });
 
+  describe('disconnectUser', () => {
+    const grantToDefaultRole = async (permission: Permission) =>
+      tdb.insert(rolePermissions).values({
+        roleId: 2,
+        permission,
+        createdAt: Date.now()
+      });
+
+    test('should rate limit excessive disconnect attempts', async () => {
+      const { caller } = await initTest(1);
+
+      for (let i = 0; i < config.rateLimiters.moveMembers.maxRequests; i++) {
+        await expect(
+          caller.voice.disconnectUser({ userId: 4 })
+        ).rejects.toThrow('User is not in a voice channel');
+      }
+
+      await expect(caller.voice.disconnectUser({ userId: 4 })).rejects.toThrow(
+        'Too many requests. Please try again shortly.'
+      );
+    });
+
+    test('should reject when the caller lacks MOVE_MEMBERS', async () => {
+      const { caller } = await initTest(2);
+
+      await expect(caller.voice.disconnectUser({ userId: 4 })).rejects.toThrow(
+        'Insufficient permissions'
+      );
+    });
+
+    test('should reject an invalid user id', async () => {
+      const { caller } = await initTest(1);
+
+      await expect(
+        caller.voice.disconnectUser({ userId: -1 })
+      ).rejects.toThrow();
+    });
+
+    test('should reject when the target user is not in a voice channel', async () => {
+      const { caller } = await initTest(1);
+
+      await expect(caller.voice.disconnectUser({ userId: 4 })).rejects.toThrow(
+        'User is not in a voice channel'
+      );
+    });
+
+    test('should reject when the target user is in a dm call', async () => {
+      const { caller } = await initTest(1);
+
+      const dmRuntime = new VoiceRuntime(DM_CHANNEL_ID);
+
+      dmRuntime.addUser(4, { micMuted: false, soundMuted: false });
+
+      try {
+        await expect(
+          caller.voice.disconnectUser({ userId: 4 })
+        ).rejects.toThrow('User is not in a voice channel');
+
+        expect(dmRuntime.getUser(4)).toBeDefined();
+      } finally {
+        await dmRuntime.destroy();
+      }
+    });
+
+    test('should reject when the caller cannot see the channel the user is in', async () => {
+      await grantToDefaultRole(Permission.MOVE_MEMBERS);
+
+      const { caller } = await initTest(2);
+
+      const runtime = new VoiceRuntime(PRIVATE_VOICE_CHANNEL_ID);
+
+      runtime.addUser(4, { micMuted: false, soundMuted: false });
+
+      try {
+        await expect(
+          caller.voice.disconnectUser({ userId: 4 })
+        ).rejects.toThrow('Insufficient channel permissions');
+
+        expect(runtime.getUser(4)).toBeDefined();
+      } finally {
+        await runtime.destroy();
+      }
+    });
+
+    test('should not let a moderator disconnect the server owner', async () => {
+      await grantToDefaultRole(Permission.MOVE_MEMBERS);
+
+      const { caller } = await initTest(2);
+
+      const runtime = new VoiceRuntime(VOICE_CHANNEL_ID);
+
+      runtime.addUser(1, { micMuted: false, soundMuted: false });
+
+      try {
+        await expect(
+          caller.voice.disconnectUser({ userId: 1 })
+        ).rejects.toThrow(
+          'Only users with the owner role can act on the server owner.'
+        );
+
+        expect(runtime.getUser(1)).toBeDefined();
+      } finally {
+        await runtime.destroy();
+      }
+    });
+
+    test('should take the user out of the call and tell everyone', async () => {
+      const { caller } = await initTest(1);
+
+      const runtime = new VoiceRuntime(VOICE_CHANNEL_ID);
+
+      runtime.addUser(4, { micMuted: false, soundMuted: false });
+
+      const departures: { channelId: number; userId: number }[] = [];
+
+      const subscription = pubsub
+        .subscribe(ServerEvents.USER_LEAVE_VOICE)
+        .subscribe({
+          next: (departure) => {
+            departures.push(departure);
+          }
+        });
+
+      try {
+        await caller.voice.disconnectUser({ userId: 4 });
+
+        expect(runtime.getUser(4)).toBeUndefined();
+        expect(VoiceRuntime.findRuntimeByUserId(4)).toBeUndefined();
+        expect(departures).toEqual([
+          { channelId: VOICE_CHANNEL_ID, userId: 4 }
+        ]);
+      } finally {
+        subscription.unsubscribe();
+        await runtime.destroy();
+      }
+    });
+
+    test('should take back a private channel the user was only shown for the call', async () => {
+      const { caller } = await initTest(1);
+
+      const runtime = new VoiceRuntime(PRIVATE_VOICE_CHANNEL_ID);
+
+      runtime.addUser(4, { micMuted: false, soundMuted: false });
+
+      const hidden: number[] = [];
+
+      const subscription = pubsub
+        .subscribeFor(4, ServerEvents.CHANNEL_DELETE)
+        .subscribe({
+          next: (channelId) => {
+            hidden.push(channelId);
+          }
+        });
+
+      try {
+        await caller.voice.disconnectUser({ userId: 4 });
+
+        expect(hidden).toEqual([PRIVATE_VOICE_CHANNEL_ID]);
+      } finally {
+        subscription.unsubscribe();
+        await runtime.destroy();
+      }
+    });
+  });
+
   // every route below opens with getCurrentVoiceRuntime. the transports and producers they go
   // on to touch need mediasoup, but the guard itself runs before any of that, so the three
   // ways it refuses are reachable. inputs only have to satisfy zod, which runs first
@@ -446,7 +612,8 @@ describe('voice router', () => {
           quality: { mode: 'auto' }
         }),
       getProducers: () => caller.voice.getProducers(),
-      sendReaction: () => caller.voice.sendReaction({ emoji: 'thumbsup' })
+      sendReaction: () => caller.voice.sendReaction({ emoji: 'thumbsup' }),
+      restartIce: () => caller.voice.restartIce({ direction: 'producer' })
     });
 
     test('should refuse every guarded route when the user is not in a voice channel', async () => {
@@ -495,6 +662,120 @@ describe('voice router', () => {
       for (const [name, call] of Object.entries(guardedCalls(caller))) {
         await expect(call(), name).rejects.toThrow('Insufficient permissions');
       }
+    });
+
+    // the connection a reconnect replaced still remembers its channel, but the session it
+    // joined now belongs to the connection that joined after it
+    test('should refuse every guarded route from a connection whose session moved', async () => {
+      const runtime = new VoiceRuntime(VOICE_CHANNEL_ID);
+
+      await runtime.init();
+
+      try {
+        const { caller: oldCaller } = await initTest(1, {
+          socket: createFakeSocket()
+        });
+        const { caller: newCaller } = await initTest(1, {
+          socket: createFakeSocket()
+        });
+        const joinInput = {
+          channelId: VOICE_CHANNEL_ID,
+          state: { micMuted: false, soundMuted: false }
+        };
+
+        await oldCaller.voice.join(joinInput);
+        await newCaller.voice.join(joinInput);
+
+        for (const [name, call] of Object.entries(guardedCalls(oldCaller))) {
+          await expect(call(), name).rejects.toThrow(
+            'Your voice session moved to another connection'
+          );
+        }
+      } finally {
+        await runtime.destroy();
+      }
+    });
+  });
+
+  describe('restartIce', () => {
+    const joinWithRuntime = async () => {
+      const runtime = new VoiceRuntime(VOICE_CHANNEL_ID);
+
+      await runtime.init();
+
+      const { caller } = await initTest(1);
+
+      await caller.voice.join({
+        channelId: VOICE_CHANNEL_ID,
+        state: { micMuted: false, soundMuted: false }
+      });
+
+      return { runtime, caller };
+    };
+
+    test('should hand out fresh ice credentials for both transports', async () => {
+      const { runtime, caller } = await joinWithRuntime();
+
+      try {
+        const producerParams = await caller.voice.createProducerTransport();
+        const consumerParams = await caller.voice.createConsumerTransport();
+
+        const producerRestart = await caller.voice.restartIce({
+          direction: 'producer'
+        });
+        const consumerRestart = await caller.voice.restartIce({
+          direction: 'consumer'
+        });
+
+        expect(producerRestart.iceParameters.usernameFragment).toBeString();
+        expect(producerRestart.iceParameters.usernameFragment).not.toBe(
+          producerParams.iceParameters.usernameFragment
+        );
+        expect(consumerRestart.iceParameters.usernameFragment).not.toBe(
+          consumerParams.iceParameters.usernameFragment
+        );
+
+        // the restart is on the user's own transport, not a new one
+        expect(runtime.getProducerTransport(1)?.id).toBe(producerParams.id);
+        expect(runtime.getConsumerTransport(1)?.id).toBe(consumerParams.id);
+      } finally {
+        await runtime.destroy();
+      }
+    });
+
+    test('should refuse when the transport was never created', async () => {
+      const { runtime, caller } = await joinWithRuntime();
+
+      try {
+        await expect(
+          caller.voice.restartIce({ direction: 'consumer' })
+        ).rejects.toThrow('Voice transport not found');
+      } finally {
+        await runtime.destroy();
+      }
+    });
+
+    test('should refuse an unknown direction', async () => {
+      const { caller } = await initTest(1);
+
+      await expect(
+        // @ts-expect-error - testing a direction the schema does not allow
+        caller.voice.restartIce({ direction: 'sideways' })
+      ).rejects.toThrow('Invalid option');
+    });
+
+    test('should rate limit excessive restarts', async () => {
+      const { caller } = await initTest(1);
+
+      for (let i = 0; i < config.rateLimiters.voiceTransport.maxRequests; i++) {
+        await expect(
+          caller.voice.restartIce({ direction: 'producer' })
+        ).rejects.toThrow('User is not in a voice channel');
+      }
+
+      await expect(
+        caller.voice.restartIce({ direction: 'producer' })
+      ).rejects.toThrow('Too many requests. Please try again shortly.');
     });
   });
 

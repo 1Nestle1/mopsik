@@ -25,6 +25,7 @@ export enum TestId {
   DM_ITEM = 'dm-item',
   USER_POPOVER_DM = 'user-popover-dm',
   USER_POPOVER_MODERATE = 'user-popover-moderate',
+  USER_CONTEXT_MENU = 'user-context-menu',
   MOD_VIEW_KICK = 'mod-view-kick',
   MOD_VIEW_BAN = 'mod-view-ban',
   USER_STATUS = 'user-status',

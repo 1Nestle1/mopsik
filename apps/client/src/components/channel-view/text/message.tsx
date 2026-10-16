@@ -85,9 +85,9 @@ const Message = memo(
     return (
       <div
         className={cn(
-          'min-w-0 flex-1 ml-1 relative hover:bg-secondary/50 rounded-md px-1 py-0.5 group',
+          'min-w-0 flex-1 ml-1 relative rounded-lg px-1 py-0.5 group transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.035]',
           isActiveThread && 'bg-primary/10',
-          isMentioned && 'border-primary bg-primary/5',
+          isMentioned && 'bg-primary/10',
           isInlineReplyTarget && 'ring-1 ring-primary/50 bg-primary/10'
         )}
         data-testid={TestId.MESSAGE_ITEM}

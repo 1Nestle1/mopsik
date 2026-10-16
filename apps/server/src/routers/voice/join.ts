@@ -14,6 +14,10 @@ import {
   consumeVoiceMoveGrant,
   hasVoiceMoveGrant
 } from '../../helpers/voice-move-grants';
+import {
+  claimVoiceSession,
+  endVoiceSession
+} from '../../helpers/voice-sessions';
 import { logger } from '../../logger';
 import { pluginManager } from '../../plugins';
 import { runHook } from '../../plugins/run-hook';
@@ -70,15 +74,6 @@ const joinVoiceRoute = rateLimitedProcedure(protectedProcedure, {
       message: 'Cannot join a direct message channel as a voice channel'
     });
 
-    const userAlreadyInVoiceChannel = VoiceRuntime.findRuntimeByUserId(
-      ctx.user.id
-    );
-
-    invariant(!userAlreadyInVoiceChannel, {
-      code: 'BAD_REQUEST',
-      message: 'User already in a voice channel'
-    });
-
     await runHook<TBeforeVoiceJoinPayload, never>({
       entries: pluginManager.getHooks('beforeVoiceJoin'),
       payload: {
@@ -95,7 +90,13 @@ const joinVoiceRoute = rateLimitedProcedure(protectedProcedure, {
       message: 'Voice runtime not found for this channel'
     });
 
+    // a session still in a runtime belongs to a connection that has not closed yet: a
+    // reconnect the server has not noticed, or the same account on another device. the
+    // newest join takes it over, the way a call moves to the device that picks up
+    endVoiceSession(ctx.user.id);
+
     runtime.addUser(ctx.user.id, input.state);
+    claimVoiceSession(ctx.user.id, ctx.getOwnWs());
 
     if (movedByModerator) consumeVoiceMoveGrant(ctx.user.id);
 

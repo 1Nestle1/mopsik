@@ -1,11 +1,11 @@
 import { useCallback, useMemo } from 'react';
 import { useVolumeControl } from '../volume-control-context';
 
-type TStreamVolumeProps =
+export type TStreamVolumeTarget =
   | { type: 'user'; userId: number }
   | { type: 'external'; pluginId: string; streamKey: string };
 
-export const useStreamVolumeControl = (props: TStreamVolumeProps) => {
+export const useStreamVolumeControl = (props: TStreamVolumeTarget) => {
   const {
     getVolume,
     setVolume,

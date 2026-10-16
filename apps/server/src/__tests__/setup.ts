@@ -6,6 +6,7 @@ import path from 'path';
 import { migrateDatabase } from '../db/migrate';
 import { DATA_PATH } from '../helpers/paths';
 import { clearVoiceMoveGrantsForTests } from '../helpers/voice-move-grants';
+import { clearVoiceSessionsForTests } from '../helpers/voice-sessions';
 import { createHttpServer } from '../http';
 import { pluginManager } from '../plugins';
 import { drainActivityLogQueue } from '../queues/activity-log';
@@ -94,6 +95,7 @@ beforeEach(async () => {
 
   clearRateLimitersForTests();
   clearVoiceMoveGrantsForTests();
+  clearVoiceSessionsForTests();
   clearUserSocketsForTests();
 
   if (sqlite) {

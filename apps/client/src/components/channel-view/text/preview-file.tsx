@@ -13,6 +13,7 @@ import {
   Trash
 } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { VideoPlayer } from './overrides/video-player';
 
 const categoryIconMap: Record<FileCategory, React.ElementType> = {
@@ -42,6 +43,7 @@ type TPreviewFileProps = {
 };
 
 const PreviewFile = memo(({ item, onRemove }: TPreviewFileProps) => {
+  const { t } = useTranslation();
   const { name, size, extension, previewUrl, progress } = item;
 
   const category = useMemo(() => getFileCategory(extension), [extension]);
@@ -131,8 +133,10 @@ const PreviewFile = memo(({ item, onRemove }: TPreviewFileProps) => {
         <Button
           size="icon"
           variant="secondary"
-          className="absolute top-1 right-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute top-1 right-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
           onClick={onRemoveClick}
+          title={t('removeFile')}
+          aria-label={t('removeFile')}
         >
           <Trash className="h-3 w-3" />
         </Button>

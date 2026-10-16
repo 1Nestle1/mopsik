@@ -7,6 +7,7 @@ import { i18n } from '@/i18n';
 import { cleanup, connectToTRPC, getTRPCClient } from '@/lib/trpc';
 import type { TMessageJumpToTarget } from '@/types';
 import {
+  getTrpcError,
   type TLocale,
   type TPublicServerSettings,
   type TServerInfo
@@ -30,6 +31,7 @@ import {
 import { connectedSelector, infoSelector } from './selectors';
 import { serverSliceActions } from './slice';
 import { SoundType, type TDisconnectInfo } from './types';
+import { rejoinVoice } from './voice/actions';
 
 let unsubscribeFromServer: (() => void) | null = null;
 
@@ -47,6 +49,18 @@ export const setDisconnectInfo = (info: TDisconnectInfo | undefined) => {
 
 export const setDmsOpen = (open: boolean) => {
   store.dispatch(serverSliceActions.setDmsOpen(open));
+};
+
+export const openDirectMessage = async (userId: number) => {
+  try {
+    const trpc = getTRPCClient();
+    const { channelId } = await trpc.dms.open.mutate({ userId });
+
+    setDmsOpen(true);
+    store.dispatch(appSliceActions.setSelectedDmChannelId(channelId));
+  } catch (error) {
+    toast.error(getTrpcError(error, i18n.t('common:couldNotOpenDM')));
+  }
 };
 
 export const setPublicServerSettings = (
@@ -156,6 +170,19 @@ const abandonReconnect = () => {
   playSound(SoundType.SERVER_DISCONNECTED);
 };
 
+// the media transports could not be repaired in place. with the server connection still up a
+// fresh join is the way back. with it down, the reconnect rejoins on its own once it is back,
+// and a join attempted now would only fail and forget which channel to return to
+export const rejoinVoiceAfterTransportFailure = () => {
+  const state = store.getState();
+  const connected = connectedSelector(state);
+  const voiceChannelId = currentVoiceChannelIdSelector(state);
+
+  if (!connected || voiceChannelId === undefined) return;
+
+  rejoinVoice(voiceChannelId);
+};
+
 // a reconnected socket starts unauthenticated: the server only sets ctx.authenticated and
 // tracks the user in joinServer, and every subscription sits behind that. so recovering a
 // dropped connection means replaying the whole join, not just reopening the transport.
@@ -210,15 +237,23 @@ export const reconnectToServer = (info: TDisconnectInfo) => {
       })
     );
 
+    // read before connecting: the server can end the old session while the new socket is
+    // subscribing, and that clears the channel this has to rejoin
+    const voiceChannelId = currentVoiceChannelIdSelector(store.getState());
+
     try {
       // connect() opens the password dialog instead of joining when the server asks for one,
       // so reconnecting stays true until setInitialData clears it
       await connect();
       cancelReconnect();
 
-      pushVoiceDebugEvent('ws', 'reconnected', {
-        voiceChannelId: currentVoiceChannelIdSelector(store.getState())
-      });
+      pushVoiceDebugEvent('ws', 'reconnected', { voiceChannelId });
+
+      const joined = connectedSelector(store.getState());
+
+      if (joined && voiceChannelId !== undefined) {
+        rejoinVoice(voiceChannelId);
+      }
     } catch (error) {
       logDebug('reconnect attempt failed', error);
 

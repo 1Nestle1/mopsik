@@ -75,7 +75,6 @@ const ExternalStream = memo(
 
     return (
       <StreamContextMenu
-        type="external"
         pluginId={pluginId}
         streamKey={streamKey}
         title={title}

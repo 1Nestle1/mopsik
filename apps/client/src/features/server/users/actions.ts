@@ -1,5 +1,13 @@
+import { requestTextInput } from '@/features/dialogs/actions';
 import { store } from '@/features/store';
-import { UserStatus, type TJoinedPublicUser } from '@sharkord/shared';
+import { i18n } from '@/i18n';
+import { getTRPCClient } from '@/lib/trpc';
+import {
+  getTrpcError,
+  UserStatus,
+  type TJoinedPublicUser
+} from '@sharkord/shared';
+import { toast } from 'sonner';
 import { serverSliceActions } from '../slice';
 import { userByIdSelector } from './selectors';
 
@@ -33,4 +41,50 @@ export const handleUserJoin = (user: TJoinedPublicUser) => {
   } else {
     addUser(user);
   }
+};
+
+// asks for an optional reason first. resolves false when the moderator cancelled, so callers
+// only refresh after something was actually attempted
+export const kickUserWithReason = async (userId: number) => {
+  const reason = await requestTextInput({
+    title: i18n.t('settings:kickTitle'),
+    message: i18n.t('settings:kickMsg'),
+    confirmLabel: i18n.t('settings:kickConfirm'),
+    allowEmpty: true
+  });
+
+  if (reason === null) return false;
+
+  try {
+    const trpc = getTRPCClient();
+
+    await trpc.users.kick.mutate({ userId, reason });
+    toast.success(i18n.t('settings:kickedSuccess'));
+  } catch (error) {
+    toast.error(getTrpcError(error, i18n.t('settings:failedKick')));
+  }
+
+  return true;
+};
+
+export const banUserWithReason = async (userId: number) => {
+  const reason = await requestTextInput({
+    title: i18n.t('settings:banTitle'),
+    message: i18n.t('settings:banMsg'),
+    confirmLabel: i18n.t('settings:banConfirm'),
+    allowEmpty: true
+  });
+
+  if (reason === null) return false;
+
+  try {
+    const trpc = getTRPCClient();
+
+    await trpc.users.ban.mutate({ userId, reason });
+    toast.success(i18n.t('settings:bannedSuccess'));
+  } catch (error) {
+    toast.error(getTrpcError(error, i18n.t('settings:failedBan')));
+  }
+
+  return true;
 };

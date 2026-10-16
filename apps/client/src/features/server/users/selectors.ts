@@ -104,3 +104,11 @@ export const usernamesSelector = createSelector([usersSelector], (users) => {
 
   return map;
 });
+
+// everyone who is around right now, in the members list order (online before idle)
+export const onlineUsersSelector = createSelector([usersSelector], (users) =>
+  users.filter(
+    (user) =>
+      !user.banned && (user.status ?? UserStatus.OFFLINE) !== UserStatus.OFFLINE
+  )
+);

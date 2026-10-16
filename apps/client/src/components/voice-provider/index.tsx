@@ -1,3 +1,4 @@
+import { rejoinVoiceAfterTransportFailure } from '@/features/server/actions';
 import { useCurrentVoiceChannelId } from '@/features/server/channels/hooks';
 import { useWebRtcSimulcastEnabled } from '@/features/server/hooks';
 import { SoundType } from '@/features/server/types';
@@ -79,6 +80,14 @@ import { useTransportStats } from './hooks/use-transport-stats';
 import { useTransports } from './hooks/use-transports';
 import { useVoiceControls } from './hooks/use-voice-controls';
 import { useVoiceEvents } from './hooks/use-voice-events';
+import {
+  getMicFailureStatus,
+  INITIAL_MIC_STATE,
+  isMicrophoneApiAvailable,
+  MicStatus,
+  type TMicState
+} from './mic-status';
+import { ProduceDeniedError } from './produce-denied-error';
 import { SIMULCAST_WEBCAM_MAX_BITRATE } from './statics';
 import { VoiceStatsContext } from './stats-context';
 import { VolumeControlProvider } from './volume-control-context';
@@ -131,6 +140,8 @@ export type TVoiceProvider = {
     routerRtpCapabilities: RtpCapabilities,
     channelId: number
   ) => Promise<void>;
+  micState: TMicState;
+  retryMic: () => Promise<void>;
 } & Pick<
   ReturnType<typeof useLocalStreams>,
   | 'localAudioStream'
@@ -163,6 +174,8 @@ const VoiceProviderContext = createContext<TVoiceProvider>({
   setStreamQuality: () => Promise.resolve(),
   isSimulcastConsumer: () => false,
   init: () => Promise.resolve(),
+  micState: INITIAL_MIC_STATE,
+  retryMic: () => Promise.resolve(),
   toggleMic: () => Promise.resolve(),
   toggleSound: () => Promise.resolve(),
   toggleWebcam: () => Promise.resolve(),
@@ -191,6 +204,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
     ConnectionStatus.DISCONNECTED
   );
+  const [micState, setMicState] = useState<TMicState>(INITIAL_MIC_STATE);
+  const isRetryingMicRef = useRef(false);
   const routerRtpCapabilities = useRef<RtpCapabilities | null>(null);
   const deviceRtpCapabilities = useRef<RtpCapabilities | null>(null);
   const audioVideoRefsMap = useRef<Map<TRefsKey, AudioVideoRefs>>(new Map());
@@ -402,7 +417,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     removeRemoteUserStream,
     setRemoteConsumerType,
     setRemoteStreamQualityLayers,
-    clearRemoteConsumerMetadata
+    clearRemoteConsumerMetadata,
+    onIceRecoveryExhausted: rejoinVoiceAfterTransportFailure
   });
 
   const {
@@ -420,6 +436,10 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     null
   );
   const nsAudioContextsRef = useRef<AudioContext[]>([]);
+  const reportMicStatus = useCallback((status: MicStatus) => {
+    setMicState((previous) => ({ status, attempt: previous.attempt + 1 }));
+  }, []);
+
   const micMutedRef = useRef(ownVoiceState.micMuted);
 
   const syncTransmitMicrophoneTrackState = useCallback(() => {
@@ -487,6 +507,14 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     try {
       logVoice('mic: starting');
       cleanupMicProcessingResources();
+
+      if (!isMicrophoneApiAvailable()) {
+        logVoiceWarn('mic: getUserMedia unavailable, page is not secure');
+        setLocalAudioStream(undefined);
+        reportMicStatus(MicStatus.INSECURE);
+
+        return;
+      }
 
       const useNsChain =
         devices.noiseSuppression === NoiseSuppression.DTLN ||
@@ -641,6 +669,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
           producerId: localAudioProducer.current.id
         });
 
+        reportMicStatus(MicStatus.ACTIVE);
+
         localAudioProducer.current?.observer.on('close', async () => {
           logVoice('mic: producer closed');
 
@@ -665,6 +695,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
           localAudioProducer.current?.close();
 
           setLocalAudioStream(undefined);
+          reportMicStatus(MicStatus.LOST);
         };
       } else {
         rawStream.getTracks().forEach((track) => track.stop());
@@ -674,9 +705,20 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       cleanupMicProcessingResources();
       setLocalAudioStream(undefined);
       logVoiceError('mic: start failed', error);
+
+      // no permission to speak in this channel is not a broken device, and the mic buttons
+      // already show it as disabled
+      if (error instanceof ProduceDeniedError) {
+        reportMicStatus(MicStatus.IDLE);
+
+        return;
+      }
+
+      reportMicStatus(getMicFailureStatus(error));
     }
   }, [
     cleanupMicProcessingResources,
+    reportMicStatus,
     producerTransport,
     setLocalAudioStream,
     localAudioProducer,
@@ -1145,7 +1187,9 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     deviceRtpCapabilities.current = null;
 
     setConnectionStatus(ConnectionStatus.DISCONNECTED);
+    reportMicStatus(MicStatus.IDLE);
   }, [
+    reportMicStatus,
     stopMonitoring,
     resetStats,
     cleanupMicProcessingResources,
@@ -1233,6 +1277,21 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       startScreenShareStream,
       stopScreenShareStream
     });
+
+  // the buttons that offer this can be clicked twice before the first attempt settles, and
+  // two overlapping starts would each open a capture and produce a track
+  const retryMic = useCallback(async () => {
+    if (isRetryingMicRef.current) return;
+
+    isRetryingMicRef.current = true;
+    logVoice('mic: retry requested');
+
+    try {
+      await startMicStream();
+    } finally {
+      isRetryingMicRef.current = false;
+    }
+  }, [startMicStream]);
 
   const setMicMutedForBridge = useCallback(
     async (muted: boolean) => {
@@ -1363,6 +1422,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       setStreamQuality,
       isSimulcastConsumer,
       init,
+      micState,
+      retryMic,
 
       toggleMic,
       toggleSound,
@@ -1389,6 +1450,8 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
       setStreamQuality,
       isSimulcastConsumer,
       init,
+      micState,
+      retryMic,
 
       toggleMic,
       toggleSound,

@@ -17,6 +17,7 @@ import {
   hiddenPluginComponentsSelector,
   infoSelector,
   isOwnUserOwnerSelector,
+  loungeVoiceChannelsSelector,
   ownUserRolesSelector,
   ownVoiceUserSelector,
   pluginsEnabledSelector,
@@ -24,10 +25,12 @@ import {
   reconnectingSelector,
   reconnectSelector,
   referenceableChannelsSelector,
+  referenceableVoiceChannelsSelector,
   serverNameSelector,
   totalUnreadCountSelector,
   typingUsersByChannelIdSelector,
   typingUsersByThreadIdSelector,
+  unreadTextChannelsSelector,
   userRolesSelector,
   userSettingsPluginsSelector,
   voiceUsersByChannelIdSelector,
@@ -184,3 +187,12 @@ export const useDmsOpen = () => useSelector(dmsOpenSelector);
 
 export const useUserSettingsPlugins = () =>
   useSelector(userSettingsPluginsSelector);
+
+export const useReferenceableVoiceChannels = () =>
+  useSelector(referenceableVoiceChannelsSelector);
+
+export const useLoungeVoiceChannels = () =>
+  useSelector(loungeVoiceChannelsSelector);
+
+export const useUnreadTextChannels = () =>
+  useSelector(unreadTextChannelsSelector);

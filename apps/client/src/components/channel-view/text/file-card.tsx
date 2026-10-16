@@ -11,6 +11,7 @@ import {
   Trash
 } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type TFileIconProps = {
   extension: string;
@@ -48,6 +49,7 @@ const FileCard = ({
   href,
   onRemove
 }: TFileCardProps) => {
+  const { t } = useTranslation();
   const onRemoveClick = useCallback(
     (e: React.MouseEvent) => {
       if (onRemove) {
@@ -83,6 +85,8 @@ const FileCard = ({
           variant="ghost"
           className="h-8 w-8 shrink-0 transition-opacity duration-200"
           onClick={onRemoveClick}
+          title={t('removeFile')}
+          aria-label={t('removeFile')}
         >
           <Trash className="h-4 w-4" />
         </Button>

@@ -12,10 +12,12 @@ import {
   ownVoiceStateSelector,
   pinnedCardSelector,
   showUserBannersInVoiceSelector,
+  userVoiceChannelIdSelector,
   voiceChannelAudioExternalStreamsSelector,
   voiceChannelExternalStreamsListSelector,
   voiceMoveTargetChannelIdSelector,
-  voiceReactionsSelector
+  voiceReactionsSelector,
+  voiceRejoinChannelIdSelector
 } from './selectors';
 
 export const useVoiceChannelExternalStreamsList = (channelId: number) =>
@@ -46,6 +48,12 @@ export const usePinnedCard = () => useSelector(pinnedCardSelector);
 
 export const useVoiceMoveTargetChannelId = () =>
   useSelector(voiceMoveTargetChannelIdSelector);
+
+export const useVoiceRejoinChannelId = () =>
+  useSelector(voiceRejoinChannelIdSelector);
+
+export const useUserVoiceChannelId = (userId: number) =>
+  useSelector((state: IRootState) => userVoiceChannelIdSelector(state, userId));
 
 export const useVoiceReactions = (userId: number) =>
   useSelector((state: IRootState) => voiceReactionsSelector(state, userId));

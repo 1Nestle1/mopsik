@@ -32,8 +32,12 @@ const SearchResultMessageCard = memo(
       });
     }, [onJump, message]);
 
+    const jumpLabel = message.parentMessageId
+      ? t('jumpToThreadMessage')
+      : t('jumpToMessage');
+
     return (
-      <div className="w-full overflow-hidden rounded-lg border border-border bg-card px-3 py-2 text-left">
+      <div className="w-full overflow-hidden rounded-xl bg-foreground/[0.04] px-3 py-2 text-left">
         <div className="flex min-w-0 items-start gap-3">
           {isPluginMessage ? (
             <PluginAvatar
@@ -77,19 +81,14 @@ const SearchResultMessageCard = memo(
               </div>
             </div>
           </div>
-          <Tooltip
-            content={
-              message.parentMessageId
-                ? t('jumpToThreadMessage')
-                : t('jumpToMessage')
-            }
-          >
+          <Tooltip content={jumpLabel}>
             <IconButton
               icon={ArrowRight}
               variant="ghost"
               size="sm"
               onClick={handleJump}
               data-testid={TestId.SEARCH_RESULT_JUMP}
+              aria-label={jumpLabel}
             />
           </Tooltip>
         </div>

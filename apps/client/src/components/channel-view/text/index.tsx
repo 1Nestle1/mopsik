@@ -20,10 +20,11 @@ import {
 } from '@sharkord/shared';
 import { Spinner } from '@sharkord/ui';
 import { ArrowDown } from 'lucide-react';
-import { memo, useCallback, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ChatInputDivider } from './chat-input-divider';
+import { DayDivider } from './day-divider';
 import { DEFAULT_MAX_HEIGHT_VH } from './helpers';
 import { useArrowUpEdit } from './hooks/use-arrow-up-edit';
 import { useScrollController } from './hooks/use-scroll-controller';
@@ -204,15 +205,19 @@ const TextChannel = memo(({ channelId, onClose }: TChannelProps) => {
       >
         <div className="space-y-4">
           {groupedMessages.map((group) => (
-            <MessagesGroup
-              key={group.key}
-              group={group.messages}
-              onReplyMessageSelect={onReplyMessageSelect}
-              replyTargetMessageId={replyingToMessage?.id}
-              activeThreadMessageId={activeThreadMessageId}
-              editingMessageId={editingMessageId}
-              onEditComplete={handleEditComplete}
-            />
+            <Fragment key={group.key}>
+              {group.startsNewDay && group.messages[0] && (
+                <DayDivider timestamp={group.messages[0].createdAt} />
+              )}
+              <MessagesGroup
+                group={group.messages}
+                onReplyMessageSelect={onReplyMessageSelect}
+                replyTargetMessageId={replyingToMessage?.id}
+                activeThreadMessageId={activeThreadMessageId}
+                editingMessageId={editingMessageId}
+                onEditComplete={handleEditComplete}
+              />
+            </Fragment>
           ))}
         </div>
       </div>

@@ -15,6 +15,25 @@ export const pinnedCardSelector = (state: IRootState) =>
 export const voiceMoveTargetChannelIdSelector = (state: IRootState) =>
   state.server.voiceMoveTargetChannelId;
 
+export const voiceRejoinChannelIdSelector = (state: IRootState) =>
+  state.server.voiceRejoinChannelId;
+
+export const voiceMapSelector = (state: IRootState) => state.server.voiceMap;
+
+// a user is in at most one voice channel, so the first channel listing them is theirs
+export const userVoiceChannelIdSelector = createCachedSelector(
+  [voiceMapSelector, (_: IRootState, userId: number) => userId],
+  (voiceMap, userId) => {
+    const channelId = Object.keys(voiceMap).find(
+      (id) => voiceMap[Number(id)].users[userId]
+    );
+
+    if (channelId === undefined) return undefined;
+
+    return Number(channelId);
+  }
+)((_, userId: number) => userId);
+
 export const voiceChannelStateSelector = (
   state: IRootState,
   channelId: number

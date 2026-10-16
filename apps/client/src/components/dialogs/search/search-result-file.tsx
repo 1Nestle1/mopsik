@@ -22,7 +22,7 @@ const SearchResultFileCard = memo(
     }, [onJump, result.channelId, result.messageId, result.channelIsDm]);
 
     return (
-      <div className="overflow-hidden rounded-lg border border-border bg-card px-3 py-2">
+      <div className="overflow-hidden rounded-xl bg-foreground/[0.04] px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
           <a

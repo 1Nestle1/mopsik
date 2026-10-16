@@ -1,19 +1,17 @@
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
-import { setModViewOpen, setSelectedDmChannelId } from '@/features/app/actions';
-import { setDmsOpen } from '@/features/server/actions';
+import { setModViewOpen } from '@/features/app/actions';
+import { openDirectMessage } from '@/features/server/actions';
 import { usePublicServerSettings, useUserRoles } from '@/features/server/hooks';
 import { useIsOwnUser, useUserById } from '@/features/server/users/hooks';
 import { getFileUrl } from '@/helpers/get-file-url';
 import { getRenderedUsername } from '@/helpers/get-rendered-username';
 import { useDateLocale } from '@/hooks/use-date-locale';
-import { getTRPCClient } from '@/lib/trpc';
 import {
   DELETED_USER_IDENTITY_AND_NAME,
   Permission,
   PluginSlot,
   TestId,
-  UserStatus,
-  getTrpcError
+  UserStatus
 } from '@sharkord/shared';
 import {
   IconButton,
@@ -25,7 +23,6 @@ import { format } from 'date-fns';
 import { MessageSquare, ShieldCheck, Trash, UserCog } from 'lucide-react';
 import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import { Protect } from '../protect';
 import { RoleBadge } from '../role-badge';
 import { UserAvatar } from '../user-avatar';
@@ -46,18 +43,10 @@ const UserPopover = memo(({ userId, children }: TUserPopoverProps) => {
 
   const pluginProps = useMemo(() => ({ userId }), [userId]);
 
-  const onDirectMessageClick = useCallback(async () => {
-    const trpc = getTRPCClient();
-
-    try {
-      const result = await trpc.dms.open.mutate({ userId });
-
-      setDmsOpen(true);
-      setSelectedDmChannelId(result.channelId);
-    } catch (error) {
-      toast.error(getTrpcError(error, t('couldNotOpenDM')));
-    }
-  }, [userId, t]);
+  const onDirectMessageClick = useCallback(
+    () => openDirectMessage(userId),
+    [userId]
+  );
 
   if (!user) return <>{children}</>;
 

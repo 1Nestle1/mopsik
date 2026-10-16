@@ -20,9 +20,11 @@ import { Others } from './others';
 import { Password } from './password';
 import { Profile } from './profile';
 
-type TUserSettingsProps = TServerScreenBaseProps;
+type TUserSettingsProps = TServerScreenBaseProps & {
+  initialEntryId?: string;
+};
 
-const UserSettings = memo(({ close }: TUserSettingsProps) => {
+const UserSettings = memo(({ close, initialEntryId }: TUserSettingsProps) => {
   const { t } = useTranslation('settings');
   const can = useCan();
   const userSettingsPlugins = useUserSettingsPlugins();
@@ -88,6 +90,7 @@ const UserSettings = memo(({ close }: TUserSettingsProps) => {
       close={close}
       entries={entries}
       pluginEntries={pluginEntries}
+      initialEntryId={initialEntryId}
     />
   );
 });

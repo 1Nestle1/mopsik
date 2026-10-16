@@ -1,11 +1,11 @@
 import { UserAvatar } from '@/components/user-avatar';
 import { setModViewOpen } from '@/features/app/actions';
-import {
-  openDialog,
-  requestConfirmation,
-  requestTextInput
-} from '@/features/dialogs/actions';
+import { openDialog, requestConfirmation } from '@/features/dialogs/actions';
 import { useUserRoles } from '@/features/server/hooks';
+import {
+  banUserWithReason,
+  kickUserWithReason
+} from '@/features/server/users/actions';
 import { useOwnUserId, useUserStatus } from '@/features/server/users/hooks';
 import { getTRPCClient } from '@/lib/trpc';
 import {
@@ -62,31 +62,8 @@ const Header = memo(() => {
   );
 
   const onKick = useCallback(async () => {
-    const reason = await requestTextInput({
-      title: t('kickTitle'),
-      message: t('kickMsg'),
-      confirmLabel: t('kickConfirm'),
-      allowEmpty: true
-    });
-
-    if (reason === null) {
-      return;
-    }
-
-    const trpc = getTRPCClient();
-
-    try {
-      await trpc.users.kick.mutate({
-        userId: user.id,
-        reason
-      });
-      toast.success(t('kickedSuccess'));
-    } catch (error) {
-      toast.error(getTrpcError(error, t('failedKick')));
-    } finally {
-      refetch();
-    }
-  }, [user.id, refetch, t]);
+    if (await kickUserWithReason(user.id)) refetch();
+  }, [user.id, refetch]);
 
   const onBan = useCallback(async () => {
     if (isDeletedUser) {
@@ -94,30 +71,7 @@ const Header = memo(() => {
       return;
     }
 
-    const trpc = getTRPCClient();
-
-    const reason = await requestTextInput({
-      title: t('banTitle'),
-      message: t('banMsg'),
-      confirmLabel: t('banConfirm'),
-      allowEmpty: true
-    });
-
-    if (reason === null) {
-      return;
-    }
-
-    try {
-      await trpc.users.ban.mutate({
-        userId: user.id,
-        reason
-      });
-      toast.success(t('bannedSuccess'));
-    } catch (error) {
-      toast.error(getTrpcError(error, t('failedBan')));
-    } finally {
-      refetch();
-    }
+    if (await banUserWithReason(user.id)) refetch();
   }, [user.id, refetch, isDeletedUser, t]);
 
   const onUnban = useCallback(async () => {

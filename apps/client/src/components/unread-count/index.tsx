@@ -16,8 +16,12 @@ const UnreadCount = memo(
       <div
         data-testid={TestId.UNREAD_COUNT}
         className={cn(
-          'ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground',
-          hasMention && 'bg-red-500 text-white',
+          'ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-medium tabular-nums',
+          // a wall of filled badges hid the one that mattered: only a mention earns the
+          // accent pill, plain unread stays a quiet number
+          hasMention
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground',
           className
         )}
       >

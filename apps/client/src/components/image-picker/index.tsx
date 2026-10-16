@@ -1,6 +1,6 @@
 import { usePickImage, type TPickedImage } from '@/hooks/use-pick-image';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants, Group } from '@sharkord/ui';
+import { Button, Group } from '@sharkord/ui';
 import { Upload } from 'lucide-react';
 import { memo, useCallback, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -46,8 +46,7 @@ const ImagePicker = memo(
     let preview = fallback ?? (
       <div
         className={cn(
-          buttonVariants({ variant: 'outline' }),
-          'h-24 w-80 cursor-pointer',
+          'h-24 w-80 rounded-xl bg-muted transition-colors group-hover:bg-accent',
           className
         )}
       />
@@ -59,7 +58,7 @@ const ImagePicker = memo(
           src={previewUrl}
           alt=""
           className={cn(
-            'h-24 w-80 rounded-md bg-muted object-cover',
+            'h-24 w-80 rounded-xl bg-muted object-cover',
             className
           )}
         />
@@ -76,7 +75,7 @@ const ImagePicker = memo(
           onClick={handlePick}
         >
           {preview}
-          <div className="absolute inset-0 flex items-center justify-center rounded-md opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
             <div className="rounded-full bg-black/50 p-3">
               <Upload className="h-6 w-6 text-white" />
             </div>

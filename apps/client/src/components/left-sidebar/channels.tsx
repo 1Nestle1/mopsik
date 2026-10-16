@@ -15,9 +15,10 @@ import {
   useUnreadMessagesCount,
   useVoiceUsersByChannelId
 } from '@/features/server/hooks';
+import { moveUserToVoiceChannel } from '@/features/server/voice/actions';
 import { useVoiceChannelExternalStreamsList } from '@/features/server/voice/hooks';
+import { activateOnKey } from '@/helpers/activate-on-key';
 import { useSelectChannel } from '@/hooks/use-select-channel';
-import { getTRPCClient } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 import { useDroppable } from '@dnd-kit/core';
 import {
@@ -30,13 +31,10 @@ import {
   ChannelPermission,
   Permission,
   type TChannel,
-  TestId,
-  getTrpcError
+  TestId
 } from '@sharkord/shared';
 import { Hash, Volume2 } from 'lucide-react';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import { ChannelContextMenu } from '../context-menus/channel';
 import { UnreadCount } from '../unread-count';
 import { ExternalStream } from './external-stream';
@@ -60,7 +58,6 @@ const Voice = memo(
     isSelected,
     ...props
   }: TVoiceProps & { isSelected: boolean }) => {
-    const { t } = useTranslation('sidebar');
     const users = useVoiceUsersByChannelId(channel.id);
     const externalStreams = useVoiceChannelExternalStreamsList(channel.id);
     const unreadCount = useUnreadMessagesCount(channel.id);
@@ -99,15 +96,9 @@ const Voice = memo(
 
         if (!userId || users.some((user) => user.id === userId)) return;
 
-        try {
-          const trpc = getTRPCClient();
-
-          await trpc.voice.moveUser.mutate({ userId, channelId: channel.id });
-        } catch (error) {
-          toast.error(getTrpcError(error, t('failedMoveUser')));
-        }
+        await moveUserToVoiceChannel(userId, channel.id);
       },
-      [channel.id, users, t]
+      [channel.id, users]
     );
 
     return (
@@ -119,15 +110,11 @@ const Voice = memo(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(props.className, {
-            'text-blue-500':
-              someoneIsSharingScreen && (isOwnChannel || isSelected),
-            'text-green-500':
-              (isOwnChannel && !someoneIsSharingScreen) ||
-              (isSelected &&
-                !someoneIsSharingScreen &&
-                !isOwnChannel &&
-                isVoiceActive),
-            'ring-1 ring-primary bg-accent/40': isDragOver
+            // the channel you are in, or a selected one with people talking, is alive
+            'text-live hover:text-live':
+              isOwnChannel || (isSelected && isVoiceActive),
+            'text-foreground': isVoiceActive && !isOwnChannel && !isSelected,
+            'ring-1 ring-primary bg-primary/10': isDragOver
           })}
         >
           {isVoiceActive ? (
@@ -188,7 +175,12 @@ const Text = memo(({ channel, ...props }: TTextProps) => {
   const isMuted = useIsChannelMuted(channel.id);
 
   return (
-    <ItemWrapper {...props}>
+    <ItemWrapper
+      {...props}
+      className={cn(
+        unreadCount > 0 && !isMuted && 'font-semibold text-foreground'
+      )}
+    >
       <Hash className="h-4 w-4" />
       <span className={cn('flex-1', { 'opacity-50': isMuted })}>
         {channel.name}
@@ -234,15 +226,20 @@ const ItemWrapper = memo(
     return (
       <div
         {...dragHandleProps}
+        // the drag attributes report aria-disabled when reordering is off, which reads as
+        // "channel unavailable" to people who simply cannot manage channels
+        aria-disabled={disabled}
+        aria-current={isSelected ? 'page' : undefined}
+        onKeyDown={activateOnKey}
         data-testid={TestId.CHANNEL_ITEM}
         style={style}
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         className={cn(
-          'flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground select-none cursor-pointer',
+          'flex w-full items-center gap-2 rounded-full px-2.5 py-1.5 text-sm text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] hover:text-foreground select-none cursor-pointer',
           {
-            'bg-accent text-accent-foreground': isSelected,
+            'bg-primary/12 text-foreground hover:bg-primary/16': isSelected,
             'cursor-default opacity-50 hover:bg-transparent hover:text-muted-foreground':
               disabled
           },

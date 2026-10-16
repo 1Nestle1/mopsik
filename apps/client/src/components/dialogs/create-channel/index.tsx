@@ -36,19 +36,21 @@ const ChannelTypeItem = ({
   isActive,
   onClick
 }: TChannelTypeItemProps) => (
-  <div
+  <button
+    type="button"
+    aria-pressed={isActive}
     className={cn(
-      'flex items-center gap-2 p-2 rounded-md cursor-pointer',
-      isActive && 'ring-2 ring-primary bg-primary/10'
+      'flex w-full items-center gap-3 rounded-xl p-3 text-left cursor-pointer text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] hover:text-foreground',
+      isActive && 'bg-primary/12 text-foreground hover:bg-primary/16'
     )}
     onClick={onClick}
   >
     {icon}
     <div className="flex flex-col">
-      <span>{title}</span>
-      <span className="text-sm text-primary/60">{description}</span>
+      <span className="font-medium text-foreground">{title}</span>
+      <span className="text-sm text-muted-foreground">{description}</span>
     </div>
-  </div>
+  </button>
 );
 
 type TCreateChannelDialogProps = TDialogBaseProps & {

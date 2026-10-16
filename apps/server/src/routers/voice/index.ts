@@ -5,6 +5,7 @@ import { connectProducerTransportRoute } from './connect-producer-transport';
 import { consumeRoute } from './consume';
 import { createConsumerTransportRoute } from './create-consumer-transport';
 import { createProducerTransportRoute } from './create-producer-transport';
+import { disconnectUserRoute } from './disconnect-user';
 import {
   onUserJoinVoiceRoute,
   onUserLeaveVoiceRoute,
@@ -22,6 +23,7 @@ import { joinVoiceRoute } from './join';
 import { leaveVoiceRoute } from './leave';
 import { moveUserRoute } from './move';
 import { produceRoute } from './produce';
+import { restartIceRoute } from './restart-ice';
 import { sendVoiceReactionRoute } from './send-reaction';
 import { setConsumerQualityRoute } from './set-consumer-quality';
 import { updateVoiceStateRoute } from './update-state';
@@ -30,6 +32,7 @@ export const voiceRouter = t.router({
   join: joinVoiceRoute,
   leave: leaveVoiceRoute,
   moveUser: moveUserRoute,
+  disconnectUser: disconnectUserRoute,
   updateState: updateVoiceStateRoute,
   sendReaction: sendVoiceReactionRoute,
   createProducerTransport: createProducerTransportRoute,
@@ -40,6 +43,7 @@ export const voiceRouter = t.router({
   produce: produceRoute,
   consume: consumeRoute,
   setConsumerQuality: setConsumerQualityRoute,
+  restartIce: restartIceRoute,
   getProducers: getProducersRoute,
   onJoin: onUserJoinVoiceRoute,
   onLeave: onUserLeaveVoiceRoute,

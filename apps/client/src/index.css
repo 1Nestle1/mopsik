@@ -12,6 +12,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* onest carries full cyrillic, which the russian half of the group reads all day */
+@theme {
+  --font-sans:
+    'Onest Variable', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -32,6 +42,8 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-live: var(--live);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -50,8 +62,14 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/*
+  the original neutral greys, lifted off black: the group likes greys but not a black
+  screen, so the chat sits a step lighter than the frame around it. the one color is a
+  muted, darkened teal (--live), reserved for what is happening in voice right now: who is
+  speaking and the channel you are live in. everything else stays grey and white
+*/
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -67,9 +85,12 @@
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
+  /* degraded but still working, e.g. in a call without a microphone */
+  --warning: oklch(0.555 0.163 49);
+  --live: oklch(0.5 0.07 186);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -86,34 +107,37 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --background: oklch(0.27 0 0);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.31 0 0);
   --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
+  --popover: oklch(0.3 0 0);
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: oklch(0.345 0 0);
   --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --muted: oklch(0.33 0 0);
+  --muted-foreground: oklch(0.75 0 0);
+  --accent: oklch(0.345 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --warning: oklch(0.8 0.11 80);
+  --live: oklch(0.75 0.075 182);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  /* lighter than the original grey ring so keyboard focus stays visible on the greys */
+  --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
+  --sidebar: oklch(0.235 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent: oklch(0.31 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
@@ -121,10 +145,22 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* the default focus outline was a faint 1px grey on near black, invisible to keyboard users */
+  :focus-visible {
+    outline-style: solid;
+    outline-width: 2px;
+    outline-offset: 2px;
+  }
+  ::selection {
+    background-color: color-mix(in oklch, var(--primary) 32%, transparent);
+    color: var(--foreground);
   }
 }
 
@@ -142,82 +178,31 @@ body,
   height: 100%;
 }
 
-/* Define CSS variables for light and dark themes */
-:root {
-  --scrollbar-width: 12px;
-  --scrollbar-track-color-light: #f1f1f1;
-  --scrollbar-thumb-color-light: #888;
-  --scrollbar-thumb-hover-color-light: #555;
-
-  --scrollbar-track-color-dark: #2e2e2e;
-  --scrollbar-thumb-color-dark: #555;
-  --scrollbar-thumb-hover-color-dark: #888;
-}
-
-/* Light theme scrollbars */
-body {
+/* thin scrollbars tinted from the palette, so the browser default grey does not break the surface */
+* {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb-color-light)
-    var(--scrollbar-track-color-light);
+  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent)
+    transparent;
 }
 
-/* Webkit Browsers */
 ::-webkit-scrollbar {
-  width: var(--scrollbar-width);
-  height: var(--scrollbar-width);
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track-color-light);
-  border-radius: 10px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: var(--scrollbar-thumb-color-light);
-  border-radius: 10px;
-  border: 2px solid var(--scrollbar-track-color-light);
+  background-color: color-mix(in oklch, var(--foreground) 16%, transparent);
+  background-clip: content-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover-color-light);
-}
-
-/* Dark theme support */
-@media (prefers-color-scheme: dark) {
-  body {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb-color-dark)
-      var(--scrollbar-track-color-dark);
-  }
-
-  /* Webkit Browsers */
-  ::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color-dark);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb-color-dark);
-    border: 2px solid var(--scrollbar-track-color-dark);
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover-color-dark);
-  }
-}
-
-/* Firefox */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb-color-light)
-    var(--scrollbar-track-color-light);
-}
-
-@media (prefers-color-scheme: dark) {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--scrollbar-thumb-color-dark)
-      var(--scrollbar-track-color-dark);
-  }
+  background-color: color-mix(in oklch, var(--foreground) 28%, transparent);
 }
 
 #portal {
@@ -300,71 +285,20 @@ body {
   min-height: 1em;
 }
 
-/* speaking indicators */
-
-/* quiet */
-@keyframes speaking-glow-low {
-  0% {
+/*
+  speaking: a muted teal ring that grows with how loud someone is, the one place color moves.
+  a stroke rather than a glow, so it reads on any tile or avatar without lighting up the room
+*/
+@keyframes speaking-breathe {
+  from {
     box-shadow:
-      0 0 0 1px rgb(134, 239, 172, 0.4),
-      0 0 10px rgb(134, 239, 172, 0.2);
+      0 0 0 2px var(--live),
+      0 0 0 4px color-mix(in oklch, var(--live) 34%, transparent);
   }
-  50% {
+  to {
     box-shadow:
-      0 0 0 2px rgb(134, 239, 172, 0.6),
-      0 0 15px rgb(134, 239, 172, 0.3);
-  }
-  100% {
-    box-shadow:
-      0 0 0 1px rgb(134, 239, 172, 0.4),
-      0 0 10px rgb(134, 239, 172, 0.2);
-  }
-}
-
-/* normal */
-@keyframes speaking-glow-medium {
-  0% {
-    box-shadow:
-      0 0 0 2px rgb(34, 197, 94, 0.6),
-      0 0 20px rgb(34, 197, 94, 0.4),
-      0 0 30px rgb(34, 197, 94, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 0 0 4px rgb(34, 197, 94, 0.8),
-      0 0 30px rgb(34, 197, 94, 0.6),
-      0 0 45px rgb(34, 197, 94, 0.3);
-  }
-  100% {
-    box-shadow:
-      0 0 0 2px rgb(34, 197, 94, 0.6),
-      0 0 20px rgb(34, 197, 94, 0.4),
-      0 0 30px rgb(34, 197, 94, 0.2);
-  }
-}
-
-/* loud */
-@keyframes speaking-glow-high {
-  0% {
-    box-shadow:
-      0 0 0 3px rgb(22, 163, 74, 0.8),
-      0 0 25px rgb(22, 163, 74, 0.6),
-      0 0 50px rgb(22, 163, 74, 0.4),
-      0 0 75px rgb(22, 163, 74, 0.2);
-  }
-  50% {
-    box-shadow:
-      0 0 0 6px rgb(22, 163, 74, 1),
-      0 0 40px rgb(22, 163, 74, 0.8),
-      0 0 70px rgb(22, 163, 74, 0.6),
-      0 0 100px rgb(22, 163, 74, 0.3);
-  }
-  100% {
-    box-shadow:
-      0 0 0 3px rgb(22, 163, 74, 0.8),
-      0 0 25px rgb(22, 163, 74, 0.6),
-      0 0 50px rgb(22, 163, 74, 0.4),
-      0 0 75px rgb(22, 163, 74, 0.2);
+      0 0 0 2px var(--live),
+      0 0 0 7px color-mix(in oklch, var(--live) 10%, transparent);
   }
 }
 
@@ -419,15 +353,29 @@ body {
 }
 
 .speaking-effect-low {
-  animation: speaking-glow-low 2.5s ease-in-out infinite;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--live) 55%, transparent);
 }
 
 .speaking-effect-medium {
-  animation: speaking-glow-medium 1.2s ease-in-out infinite;
+  box-shadow: 0 0 0 2px var(--live);
 }
 
 .speaking-effect-high {
-  animation: speaking-glow-high 0.8s ease-in-out infinite;
+  box-shadow:
+    0 0 0 2px var(--live),
+    0 0 0 5px color-mix(in oklch, var(--live) 26%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .speaking-effect-low,
+  .speaking-effect-medium,
+  .speaking-effect-high {
+    transition: box-shadow 140ms var(--ease-emphasized);
+  }
+
+  .speaking-effect-high {
+    animation: speaking-breathe 0.9s var(--ease-emphasized) infinite alternate;
+  }
 }
 
 .media-masonry-grid {
@@ -480,4 +428,37 @@ body {
 .media-masonry-video {
   width: 100% !important;
   max-width: 100% !important;
+}
+
+/*
+  reduced motion keeps every state change but drops the travel: reactions fade in place,
+  loops that only decorate stop, spinners keep turning because they mean work is happening
+*/
+@keyframes voice-reaction-fade {
+  0% {
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voice-reaction {
+    animation: voice-reaction-fade var(--vr-duration) linear forwards;
+  }
+
+  .voice-reaction-emoji {
+    animation: none;
+  }
+
+  .animate-bounce,
+  .animate-pulse,
+  .animate-ping {
+    animation: none;
+  }
 }
