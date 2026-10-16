@@ -1,6 +1,12 @@
+import { ScreenContentHint } from '@/types';
 import { StreamKind } from '@sharkord/shared';
-import { describe, expect, test } from 'bun:test';
-import { isOwnProducerEvent } from '../helpers';
+import { describe, expect, mock, test } from 'bun:test';
+import type { RtpCapabilities } from 'mediasoup-client/types';
+import {
+  applyScreenDegradationPreference,
+  getAutoScreenCodec,
+  isOwnProducerEvent
+} from '../helpers';
 
 describe('isOwnProducerEvent', () => {
   test('should treat a producer with our own user id as ours', () => {
@@ -25,5 +31,84 @@ describe('isOwnProducerEvent', () => {
 
   test('should treat nothing as ours before the own user id is known', () => {
     expect(isOwnProducerEvent(1, undefined, StreamKind.AUDIO)).toBe(false);
+  });
+});
+
+const routerCapabilities = {
+  codecs: [
+    { kind: 'video', mimeType: 'video/VP9', clockRate: 90000 },
+    { kind: 'video', mimeType: 'video/VP8', clockRate: 90000 },
+    { kind: 'video', mimeType: 'video/H264', clockRate: 90000 },
+    { kind: 'audio', mimeType: 'audio/opus', clockRate: 48000 }
+  ]
+} as RtpCapabilities;
+
+describe('getAutoScreenCodec', () => {
+  test('should pick h264 for motion', () => {
+    const codec = getAutoScreenCodec(
+      routerCapabilities,
+      ScreenContentHint.MOTION
+    );
+
+    expect(codec?.mimeType).toBe('video/H264');
+  });
+
+  test('should leave detail to the router order', () => {
+    expect(
+      getAutoScreenCodec(routerCapabilities, ScreenContentHint.DETAIL)
+    ).toBeUndefined();
+  });
+
+  test('should give up quietly when the router has no h264', () => {
+    const withoutH264 = {
+      codecs: routerCapabilities.codecs?.filter(
+        (codec) => codec.mimeType !== 'video/H264'
+      )
+    } as RtpCapabilities;
+
+    expect(
+      getAutoScreenCodec(withoutH264, ScreenContentHint.MOTION)
+    ).toBeUndefined();
+    expect(getAutoScreenCodec(null, ScreenContentHint.MOTION)).toBeUndefined();
+  });
+});
+
+describe('applyScreenDegradationPreference', () => {
+  const createSender = () => {
+    const setParameters = mock(async () => {});
+    const sender = {
+      getParameters: () => ({ encodings: [{ active: true }] }),
+      setParameters
+    } as unknown as RTCRtpSender;
+
+    return { sender, setParameters };
+  };
+
+  test('should keep the frame rate for motion', async () => {
+    const { sender, setParameters } = createSender();
+
+    await applyScreenDegradationPreference(sender, ScreenContentHint.MOTION);
+
+    expect(setParameters).toHaveBeenCalledWith({
+      encodings: [{ active: true }],
+      degradationPreference: 'maintain-framerate'
+    });
+  });
+
+  test('should keep the resolution for detail', async () => {
+    const { sender, setParameters } = createSender();
+
+    await applyScreenDegradationPreference(sender, ScreenContentHint.DETAIL);
+
+    expect(setParameters).toHaveBeenCalledWith({
+      encodings: [{ active: true }],
+      degradationPreference: 'maintain-resolution'
+    });
+  });
+
+  test('should do nothing without a sender', async () => {
+    await expect(
+      applyScreenDegradationPreference(undefined, ScreenContentHint.MOTION)
+    ).resolves.toBeUndefined();
   });
 });

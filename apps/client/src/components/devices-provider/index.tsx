@@ -9,6 +9,7 @@ import {
 import {
   NoiseSuppression,
   Resolution,
+  ScreenContentHint,
   ScreenCursor,
   VideoCodec,
   type TDeviceSettings
@@ -46,7 +47,8 @@ const getDefaultDeviceSettings = (): TDeviceSettings => ({
   screenFramerate: 30,
   screenCodec: VideoCodec.AUTO,
   screenBitrate: DEFAULT_BITRATE,
-  screenCursor: ScreenCursor.ALWAYS
+  screenCursor: ScreenCursor.ALWAYS,
+  screenContentHint: ScreenContentHint.MOTION
 });
 
 const resolveDeviceId = (

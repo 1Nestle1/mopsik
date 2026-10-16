@@ -30,7 +30,12 @@ import { getResWidthHeight } from '@/helpers/get-res-with-height';
 import { registerVoiceDebugSource } from '@/helpers/voice-debug';
 import { useScreenShareSupport } from '@/hooks/use-screen-share-support';
 import { getTRPCClient } from '@/lib/trpc';
-import { NoiseSuppression, VideoCodec, type TStreamQuality } from '@/types';
+import {
+  NoiseSuppression,
+  ScreenContentHint,
+  VideoCodec,
+  type TStreamQuality
+} from '@/types';
 import {
   DEFAULT_BITRATE,
   getErrorMessage,
@@ -61,6 +66,8 @@ import {
 } from './controls-bridge';
 import { FloatingPinnedCard } from './floating-pinned-card';
 import {
+  applyScreenDegradationPreference,
+  getAutoScreenCodec,
   getRemoteConsumerTypeKey,
   getScreenShareSimulcastEncodings,
   getSimulcastCodec,
@@ -964,7 +971,10 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
           settings: videoTrack.getSettings()
         });
 
-        videoTrack.contentHint = 'detail';
+        const contentHint =
+          devices.screenContentHint ?? ScreenContentHint.MOTION;
+
+        videoTrack.contentHint = contentHint;
 
         let preferredCodec: RtpCodecCapability | undefined;
 
@@ -990,7 +1000,19 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
         const simulcastCodec = simulcastEnabled
           ? getSimulcastCodec(routerRtpCapabilities.current)
           : undefined;
-        const screenCodec = simulcastCodec ?? preferredCodec;
+        let autoCodec: RtpCodecCapability | undefined;
+
+        if (
+          !simulcastEnabled &&
+          (devices.screenCodec ?? VideoCodec.AUTO) === VideoCodec.AUTO
+        ) {
+          autoCodec = getAutoScreenCodec(
+            routerRtpCapabilities.current,
+            contentHint
+          );
+        }
+
+        const screenCodec = simulcastCodec ?? preferredCodec ?? autoCodec;
 
         if (simulcastCodec) {
           logVoice('screen: using vp8 for simulcast', {
@@ -1037,10 +1059,12 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
               simulcastScreenShareProducerOptions
             );
         } catch (error) {
-          if (!simulcastCodec) throw error;
+          // simulcast and the automatic h264 pick are both refusable by this browser; the
+          // plain options without them always produce
+          if (!simulcastCodec && !autoCodec) throw error;
 
           logVoiceWarn(
-            'screen: simulcast producer failed, retrying without simulcast',
+            'screen: producer failed, retrying with the browser default codec',
             { error: getErrorMessage(error) }
           );
 
@@ -1052,8 +1076,20 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
 
         logVoice('screen: producer created', {
           producerId: localScreenShareProducer.current?.id,
-          simulcast: !!simulcastCodec
+          simulcast: !!simulcastCodec,
+          contentHint
         });
+
+        try {
+          await applyScreenDegradationPreference(
+            localScreenShareProducer.current?.rtpSender,
+            contentHint
+          );
+        } catch (error) {
+          logVoiceWarn('screen: degradation preference refused', {
+            error: getErrorMessage(error)
+          });
+        }
 
         setScreenShareProducer(localScreenShareProducer.current);
 
@@ -1171,6 +1207,7 @@ const VoiceProvider = memo(({ children }: TVoiceProviderProps) => {
     devices.restrictOwnAudio,
     devices.suppressLocalAudioPlayback,
     devices.screenCursor,
+    devices.screenContentHint,
     simulcastEnabled
   ]);
 

@@ -3,7 +3,7 @@ import {
   LocalStorageKey,
   setLocalStorageItemAsJSON
 } from '@/helpers/storage';
-import { VideoCodec, type TStreamQuality } from '@/types';
+import { ScreenContentHint, VideoCodec, type TStreamQuality } from '@/types';
 import {
   StreamKind,
   type ConsumerType,
@@ -211,7 +211,53 @@ const getSimulcastCodec = (
     (c) => c.mimeType.toLowerCase() === VideoCodec.VP8.toLowerCase()
   );
 
+// most graphics cards encode h264 in hardware, which keeps fast motion smooth where a
+// software vp9 encoder starts dropping frames. text keeps the router's first choice, whose
+// sharper compression of screen content is worth the extra cpu
+const getAutoScreenCodec = (
+  rtpCapabilities: RtpCapabilities | null,
+  contentHint: ScreenContentHint
+): RtpCodecCapability | undefined => {
+  if (contentHint !== ScreenContentHint.MOTION) return undefined;
+
+  return rtpCapabilities?.codecs?.find(
+    (c) => c.mimeType.toLowerCase() === VideoCodec.H264.toLowerCase()
+  );
+};
+
+type TDegradationPreference = 'maintain-framerate' | 'maintain-resolution';
+
+// missing from the dom typings, though chromium and firefox both honour it
+type TSendParametersWithDegradation = RTCRtpSendParameters & {
+  degradationPreference?: TDegradationPreference;
+};
+
+const DEGRADATION_BY_CONTENT_HINT: Record<
+  ScreenContentHint,
+  TDegradationPreference
+> = {
+  [ScreenContentHint.MOTION]: 'maintain-framerate',
+  [ScreenContentHint.DETAIL]: 'maintain-resolution'
+};
+
+// chromium defaults screen capture to maintain-resolution whatever the content hint says,
+// which is what turns a shared game or film into a slideshow once the encoder falls behind
+const applyScreenDegradationPreference = async (
+  sender: RTCRtpSender | undefined,
+  contentHint: ScreenContentHint
+) => {
+  if (!sender) return;
+
+  const parameters = sender.getParameters() as TSendParametersWithDegradation;
+
+  parameters.degradationPreference = DEGRADATION_BY_CONTENT_HINT[contentHint];
+
+  await sender.setParameters(parameters);
+};
+
 export {
+  applyScreenDegradationPreference,
+  getAutoScreenCodec,
   getRemoteConsumerTypeKey,
   getScreenShareSimulcastEncodings,
   getSimulcastCodec,

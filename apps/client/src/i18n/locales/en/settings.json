@@ -518,5 +518,13 @@
   "messageSentSoundLabel": "Message Sent Sound",
   "messageSentSoundDesc": "Play a sound when you send a message.",
   "closeSettings": "Close settings",
-  "settingsSections": "Settings sections"
+  "settingsSections": "Settings sections",
+  "screenContentHintLabel": "Optimize for",
+  "screenContentHintDesc": "Motion keeps games and video smooth and lowers sharpness when it has to. Detail keeps text sharp and may drop frames.",
+  "screenContentHintMotion": "Motion: games and video",
+  "screenContentHintDetail": "Detail: text and code",
+  "screenPresetsLabel": "Quick presets",
+  "screenPresetSmooth": "Smooth 720p60",
+  "screenPresetSharp": "Sharp 1080p30",
+  "screenPresetBest": "Best 1080p60"
 }

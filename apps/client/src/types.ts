@@ -47,6 +47,12 @@ export enum ScreenCursor {
   NEVER = 'never'
 }
 
+// what the browser should give up first when the encoder can't keep up
+export enum ScreenContentHint {
+  MOTION = 'motion',
+  DETAIL = 'detail'
+}
+
 export enum NoiseSuppression {
   NONE = 'none',
   STANDARD = 'standard',
@@ -75,6 +81,7 @@ export type TDeviceSettings = {
   screenCodec: VideoCodec;
   screenBitrate: number;
   screenCursor: ScreenCursor;
+  screenContentHint: ScreenContentHint;
 };
 
 export type TRemoteUserStreamKinds =

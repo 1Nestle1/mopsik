@@ -1,10 +1,10 @@
 # MOPSCORD improvement plan
 
-Our fork of [Sharkord](https://github.com/sharkord/sharkord). Started 2026-10-15, replanned 2026-10-15.
+Our fork of [Sharkord](https://github.com/sharkord/sharkord). Started 2026-10-15, replanned 2026-10-16.
 
 **Main goal:** stable, high quality voice chat for our friends group. Product brief: [PRODUCT.md](PRODUCT.md).
 
-**Where the work lives:** local branch `mopscord`, made from the `v0.0.27` release. Everything is local only; nothing is committed or pushed yet.
+**Where the work lives:** branch `mopscord`, made from the `v0.0.27` release, pushed to [1Nestle1/mopsik](https://github.com/1Nestle1/mopsik) (public, so no server details or secrets in the repo).
 
 **On the server:** deployed 2026-10-15 20:03 UTC by swapping the binary of the `sharkord` systemd service. The previous stock 0.0.27 binary and a copy of the data folder are in `/opt/sharkord_backup_pre_mopscord`. To roll back: stop `sharkord`, copy that binary back to `/opt/sharkord/sharkord`, start it. No database changes, so the data works with either.
 
@@ -16,9 +16,9 @@ Our fork of [Sharkord](https://github.com/sharkord/sharkord). Started 2026-10-15
 |---|------|--------|
 | 1 | Voice stability (stuck-in-channel bug, auto-repair, crash restart) | **Done (local)** |
 | 2 | **UI revamp**: minimal, material-like, with spice in voice and motion | **Done (local)** |
-| 3 | Right-click user menu and moderation | **Now** |
-| 4 | Streaming: WHIP plugin + OBS, then the small "Sharkord Stream" app | After 3 |
-| 5 | Remaining voice items (diagnostics, quality settings, push-to-talk from upstream) | Later |
+| 3 | Right-click user menu and moderation | 3a done, 3b paused |
+| 4 | **Streaming**: better browser sharing, OBS ingest, then the small app | **Now** |
+| 5 | Ideas backlog, ranked | Next, one at a time |
 
 Sizes: **S** = an evening, **M** = a few sessions, **L** = a bigger project.
 
@@ -103,30 +103,57 @@ One menu everywhere a user appears: member list, message author, voice row, voic
 
 ---
 
-## 4. Streaming: after the menu
+## 4. Streaming: now
 
-- **4.1 Browser screen share quick wins:**
-  - "Movie / Game" vs "Text" mode, quality presets, prefer H.264.
-  - Test the FPS-drop bug ([#752](https://github.com/sharkord/sharkord/issues/752)) on Windows.
-- **4.2 WHIP ingest plugin:**
-  - Apps like OBS can push a stream into a voice channel with under a second of delay.
-  - Each user gets a personal stream key; viewers use the existing player.
-  - Check the server's upload bandwidth (≈ bitrate × viewers).
-- **4.3 Client app:**
-  - **Step A, OBS:** works on day one.
-  - **Step B, "Sharkord Stream":** a tiny Windows app (GStreamer + Tauri). Pick a window, app-only audio, GPU encoding, Start/Stop. First prove it with one command line, then wrap it in a UI. **L**
-- **4.4 Watch party for links (optional):** everyone plays the same YouTube link in sync.
+**Why browser sharing alone is not enough:**
+- The browser always marked shared video as "detail" (text), so under load it kept the resolution and dropped frames. That is the wrong trade for games and movies, and fits the 1 fps reports ([#752](https://github.com/sharkord/sharkord/issues/752), [#519](https://github.com/sharkord/sharkord/issues/519)).
+- Browsers can't capture one app's sound, can't hook a fullscreen game, and slow down when the window loses focus. OBS (or a small app) has none of these problems.
+
+**What we have to build on:**
+- The server already accepts VP8, VP9, H.264 (Baseline and High) and AV1 video with Opus audio.
+- Streams from outside a browser already show as cards in a call ("external streams").
+- Everything can reuse the media port 40000 that is already open, with signalling through nginx on 443. No new firewall rules on the shared server.
+
+**Steps:**
+- **4.1 Screen share modes (browser, nothing to install), S: done (local), en + ru, tested.** Checked in the app: a Motion share goes out as H.264 with the frame rate kept.
+  - "Optimize for": **Motion** (games, video: keeps the frame rate, lowers sharpness under load) or **Detail** (text, code: keeps it sharp, may lower the frame rate). Motion is the default.
+  - Quality presets: Smooth 720p60, Sharp 1080p30, Best 1080p60, plus the existing manual settings.
+  - Auto codec picks H.264 for Motion, which most graphics cards encode in hardware, so less CPU and fewer dropped frames.
+- **4.2 OBS ingest over WHIP (server), M to L:**
+  - WHIP is the standard way for OBS 30+ to push a WebRTC stream: one HTTPS request with an SDP offer.
+  - New server endpoint `/whip`. The stream goes into the voice channel you are in, as a card titled with your name, with sub-second delay for viewers.
+  - Personal stream key in User settings → Streaming (regenerate any time). Needs the Share screen permission.
+  - SDP handling with `sdp-transform` (already a dependency). The official `mediasoup-sdp-bridge` was never published to npm (the name there is a security placeholder), so we don't use it.
+  - Server upload ≈ stream bitrate × viewers: 6 Mbps × 5 friends = 30 Mbps.
+- **4.3 OBS guide, S:** settings page shows the URL and key, with a short "Set up OBS" guide (Service: WHIP, x264 or NVENC, Opus audio, CBR). Works on day one.
+- **4.4 "MOPSCORD Stream" small app, L:**
+  - First a single GStreamer command proves it: window capture, that app's sound only (Windows 11), GPU H.264 encoding, sent to the same `/whip` endpoint.
+  - Then a tiny Tauri window: pick an app, Start / Stop. Could later grow into a desktop client with global push-to-talk.
+- **4.5 Going live, S to M:** LIVE badge in the sidebar and Lounge, a "started streaming, Watch" toast, theater mode, stream audio muted until you click (upstream [#749](https://github.com/sharkord/sharkord/issues/749)), hide everyone's video (upstream [#123](https://github.com/sharkord/sharkord/issues/123)).
+- **4.6 Watch party (optional), M:** everyone plays the same YouTube link in sync.
 
 ---
 
-## 5. Later
+## 5. Ideas backlog, ranked
 
-- Voice diagnostics log line; per-channel bitrate; "Standard" noise suppression as the default.
-- Push-to-talk and hotkeys: take them from upstream's `development` branch when released ([#875](https://github.com/sharkord/sharkord/pull/875)).
-- Search with SQLite full-text search (FTS5); fix expiring file links ([#852](https://github.com/sharkord/sharkord/issues/852)).
-- Spread voice over several CPU cores, only if the server struggles.
-- Chat timestamps could show only the time ("1:53 AM") now that day dividers carry the date.
-- A DM header that names the person you are talking to.
+Ranked by value for a friends group divided by effort, voice first. Upstream votes in brackets.
+
+**Core quality (small to medium):**
+1. **Merge upstream push-to-talk and hotkeys** ([#875](https://github.com/sharkord/sharkord/pull/875)) and the new plugin SDK. Their changes touch files we reworked, so the sooner the easier. M
+2. **Volume up to 200% per person** (+9, [#201](https://github.com/sharkord/sharkord/issues/201)): Web Audio gain instead of the audio element's volume. S to M
+3. **Server mute / deafen and timeout** (rest of step 3b). M
+4. **Custom status and a voice channel status** (+8, [#242](https://github.com/sharkord/sharkord/issues/242)): "In a match", "AFK", or "Dota 2" shown on the room. M
+5. **Basic Markdown** (+15, [#401](https://github.com/sharkord/sharkord/issues/401)): check what the editor already supports, fill the gaps. S to M
+6. **Nightly backup of Sharkord's data on the server** with a week of copies. S, needs the server owner's OK
+
+**Fun and presence (the spice):**
+7. **Soundboard**: short clips played into the call by the server, so everyone hears them in sync. M
+8. **Voice messages in chat** (+5, [#771](https://github.com/sharkord/sharkord/issues/771)). M
+9. **Phone notifications** for mentions and DMs (web push, works with the site on the home screen). M
+10. **GIF picker** through our own server, since outside services are often blocked in Russia. M
+11. **Desktop app** with global push-to-talk (a browser can't see keys while you're in a game). Shares a codebase with 4.4. L
+
+**Smaller polish:** chat timestamps that show only the time, a DM header with the person's name, "Standard" noise suppression by default, per-channel bitrate, search with SQLite full-text search.
 
 ## Testing on other devices (Wi-Fi)
 
@@ -134,6 +161,6 @@ Set `announcedAddress` under `[webRtc]` in `apps/server/data/config.ini` to this
 
 ## Decisions still open
 
-1. Does the server run Docker or the plain binary, and what is its upload bandwidth?
+1. What is the server's upload bandwidth? (It runs the plain binary under systemd.)
 2. Should fixes that help everyone (1.1, 1.2) also go upstream as pull requests?
-3. Commit each finished item locally on `mopscord`?
+3. Commit and push after each finished item?

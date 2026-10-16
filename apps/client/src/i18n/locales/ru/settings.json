@@ -525,5 +525,13 @@
   "messageSentSoundLabel": "Звук отправки сообщения",
   "messageSentSoundDesc": "Воспроизводить звук при отправке сообщения.",
   "closeSettings": "Закрыть настройки",
-  "settingsSections": "Разделы настроек"
+  "settingsSections": "Разделы настроек",
+  "screenContentHintLabel": "Оптимизировать для",
+  "screenContentHintDesc": "Движение сохраняет плавность игр и видео и при нехватке снижает чёткость. Детали сохраняют чёткость текста, но могут пропускать кадры.",
+  "screenContentHintMotion": "Движение: игры и видео",
+  "screenContentHintDetail": "Детали: текст и код",
+  "screenPresetsLabel": "Быстрые настройки",
+  "screenPresetSmooth": "Плавно 720p60",
+  "screenPresetSharp": "Чётко 1080p30",
+  "screenPresetBest": "Максимум 1080p60"
 }

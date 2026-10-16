@@ -17,6 +17,7 @@ import {
 import {
   NoiseSuppression,
   Resolution,
+  ScreenContentHint,
   ScreenCursor,
   VideoCodec,
   type TDeviceSettings
@@ -56,6 +57,10 @@ import { useWebcamTest } from './hooks/use-webcam-test';
 import { MicrophoneTestLevelBar } from './microphone-test-level-bar';
 import { ResolutionFpsControl } from './resolution-fps-control';
 import { RestrictOwnAudioAlert } from './restrict-own-audio-alert';
+import {
+  ScreenSharePresets,
+  type TScreenSharePreset
+} from './screen-share-presets';
 import { SuppressLocalAudioPlaybackAlert } from './suppress-local-audio-playback-alert';
 import { SupressionHelp } from './supression-help';
 
@@ -252,6 +257,24 @@ const Devices = memo(() => {
   const maxBitrate = useMemo(
     () => (settings?.webRtcMaxBitrate ? settings.webRtcMaxBitrate / 1000 : 0),
     [settings?.webRtcMaxBitrate]
+  );
+
+  const applyScreenPreset = useCallback(
+    (preset: TScreenSharePreset) => {
+      onChange('screenResolution', preset.resolution);
+      onChange('screenFramerate', preset.framerate);
+      onChange(
+        'screenBitrate',
+        maxBitrate ? Math.min(preset.bitrate, maxBitrate) : preset.bitrate
+      );
+    },
+    [onChange, maxBitrate]
+  );
+
+  const onScreenContentHintChange = useCallback(
+    (value: string) =>
+      onChange('screenContentHint', value as ScreenContentHint),
+    [onChange]
   );
 
   useEffect(() => {
@@ -569,6 +592,38 @@ const Devices = memo(() => {
           />
         </Group>
         <Group label={t('screenSharingLabel')}>
+          <Group
+            label={t('screenContentHintLabel')}
+            description={t('screenContentHintDesc')}
+          >
+            <Select
+              value={values.screenContentHint ?? ScreenContentHint.MOTION}
+              onValueChange={onScreenContentHintChange}
+            >
+              <SelectTrigger className="w-64">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={ScreenContentHint.MOTION}>
+                    {t('screenContentHintMotion')}
+                  </SelectItem>
+                  <SelectItem value={ScreenContentHint.DETAIL}>
+                    {t('screenContentHintDetail')}
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Group>
+
+          <Group label={t('screenPresetsLabel')}>
+            <ScreenSharePresets
+              resolution={values.screenResolution}
+              framerate={values.screenFramerate}
+              onApply={applyScreenPreset}
+            />
+          </Group>
+
           <div className="flex">
             <ResolutionFpsControl
               framerate={values.screenFramerate}
