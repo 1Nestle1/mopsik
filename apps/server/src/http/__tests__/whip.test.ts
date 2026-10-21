@@ -139,6 +139,21 @@ describe('/whip', () => {
     );
   });
 
+  test('should label a stream from our own app', async () => {
+    const runtime = await joinVoice(VOICE_CHANNEL_ID, 1);
+    const { key } = await regenerateStreamKey(1);
+
+    const response = await postOffer({
+      key,
+      userAgent: 'MOPSCORD-Stream/0.1.0'
+    });
+
+    expect(response.status).toBe(201);
+    expect(Object.values(runtime.getState().externalStreams)[0]?.pluginId).toBe(
+      'MOPSCORD Stream'
+    );
+  });
+
   test('should replace the stream the same person left running', async () => {
     const runtime = await joinVoice(VOICE_CHANNEL_ID, 1);
     const { key } = await regenerateStreamKey(1);

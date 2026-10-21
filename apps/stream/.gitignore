@@ -1,0 +1,7 @@
+node_modules
+dist-renderer
+dist-electron
+release
+resources/app-audio
+native/AppAudio/bin
+native/AppAudio/obj

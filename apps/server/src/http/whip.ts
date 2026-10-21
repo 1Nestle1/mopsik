@@ -77,6 +77,14 @@ const isWithinRateLimit = (
 
 const getSessionId = (pathname: string) => pathname.split('/')[2] ?? '';
 
+// shown on the stream card as "via ...", so viewers can tell an obs stream from our own app's
+const getStreamSource = (userAgent: string) => {
+  if (/MOPSCORD-Stream/i.test(userAgent)) return 'MOPSCORD Stream';
+  if (/obs/i.test(userAgent)) return 'OBS';
+
+  return 'WHIP';
+};
+
 // pre-auth on purpose: the stream key in the header is the only credential an app like obs
 // can carry, so the ip based limit runs first to keep key guessing slow
 const whipPostRouteHandler = async (
@@ -146,8 +154,7 @@ const whipPostRouteHandler = async (
     );
   }
 
-  const userAgent = req.headers['user-agent'] ?? '';
-  const source = /obs/i.test(userAgent) ? 'OBS' : 'WHIP';
+  const source = getStreamSource(req.headers['user-agent'] ?? '');
 
   try {
     const { sessionId, answerSdp } = await startWhipSession({
