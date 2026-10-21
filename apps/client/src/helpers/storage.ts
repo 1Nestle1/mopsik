@@ -38,7 +38,8 @@ export enum LocalStorageKey {
   HOTKEY_BINDINGS = 'sharkord-hotkey-bindings',
   HOTKEY_BRIDGE_TOKEN = 'sharkord-hotkey-bridge-token',
   MIC_MODE = 'sharkord-mic-mode',
-  HOTKEYS_ENABLED = 'sharkord-hotkeys-enabled'
+  HOTKEYS_ENABLED = 'sharkord-hotkeys-enabled',
+  NOTIFICATIONS_PROMPT_DISMISSED = 'sharkord-notifications-prompt-dismissed'
 }
 
 export enum SessionStorageKey {

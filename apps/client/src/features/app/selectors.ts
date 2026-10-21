@@ -1,5 +1,6 @@
 import { MicMode } from '@/types';
 import { createSelector } from '@reduxjs/toolkit';
+import type { TNotificationPreferences } from '@sharkord/shared';
 import { createCachedSelector } from 're-reselect';
 import type { IRootState } from '../store';
 
@@ -50,6 +51,21 @@ export const browserNotificationsForDmsSelector = (state: IRootState) =>
 
 export const browserNotificationsForRepliesSelector = (state: IRootState) =>
   state.app.browserNotificationsForReplies;
+
+export const notificationPreferencesSelector = createSelector(
+  [
+    browserNotificationsSelector,
+    browserNotificationsForMentionsSelector,
+    browserNotificationsForDmsSelector,
+    browserNotificationsForRepliesSelector
+  ],
+  (all, mentions, dms, replies): TNotificationPreferences => ({
+    all,
+    mentions,
+    dms,
+    replies
+  })
+);
 
 export const messageJumpTargetSelector = (state: IRootState) =>
   state.app.messageJumpTarget;

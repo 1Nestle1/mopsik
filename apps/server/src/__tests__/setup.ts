@@ -11,6 +11,7 @@ import { createHttpServer } from '../http';
 import { pluginManager } from '../plugins';
 import { drainActivityLogQueue } from '../queues/activity-log';
 import { drainLoginsQueue } from '../queues/logins';
+import { drainPushNotificationsQueue } from '../queues/push-notifications';
 import { VoiceRuntime } from '../runtimes/voice';
 import { clearWhipSessionsForTests } from '../runtimes/whip';
 import { loadMediasoup } from '../utils/mediasoup';
@@ -138,6 +139,7 @@ afterEach(async () => {
   // side effect inside the test that caused it
   await drainLoginsQueue();
   await drainActivityLogQueue();
+  await drainPushNotificationsQueue();
 
   if (sqlite) {
     try {

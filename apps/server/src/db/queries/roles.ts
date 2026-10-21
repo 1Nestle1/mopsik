@@ -62,6 +62,32 @@ const getUserRoleIds = async (userId: number): Promise<number[]> => {
   return userRoleRecords.map((ur) => ur.roleId);
 };
 
+// a whole audience in one query, grouped by user, instead of getUserRoleIds per person
+const getRoleIdsByUserIds = async (
+  userIds: number[]
+): Promise<Map<number, number[]>> => {
+  const roleIdsByUserId = new Map<number, number[]>();
+
+  if (userIds.length === 0) return roleIdsByUserId;
+
+  const rows = await db
+    .select({ userId: userRoles.userId, roleId: userRoles.roleId })
+    .from(userRoles)
+    .where(inArray(userRoles.userId, userIds));
+
+  for (const { userId, roleId } of rows) {
+    const roleIds = roleIdsByUserId.get(userId);
+
+    if (roleIds) {
+      roleIds.push(roleId);
+    } else {
+      roleIdsByUserId.set(userId, [roleId]);
+    }
+  }
+
+  return roleIdsByUserId;
+};
+
 // server-level permission check for an arbitrary user (the context's
 // hasPermission is bound to the caller). Mirrors channelUserCan's shape:
 // owner short-circuit + a single lookup over the user's roles.
@@ -152,6 +178,7 @@ export {
   getDefaultRole,
   getEffectiveStorageSpaceQuotaByUserId,
   getRole,
+  getRoleIdsByUserIds,
   getRoles,
   getUserRoleIds,
   getUserRoles,

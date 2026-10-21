@@ -571,6 +571,46 @@ const streamKeys = sqliteTable(
   (t) => [uniqueIndex('stream_keys_key_hash_idx').on(t.keyHash)]
 );
 
+// the key pair the server signs pushes with. a browser ties each subscription to the public
+// key, so it is made once and kept: a new pair would silently orphan every subscription
+const pushVapidKeys = sqliteTable(
+  'push_vapid_keys',
+  {
+    publicKey: text('public_key').notNull(),
+    privateKey: text('private_key').notNull(),
+    createdAt: integer('created_at').notNull()
+  },
+  () => [uniqueIndex('push_vapid_keys_single_row_idx').on(sql`(1)`)]
+);
+
+// one row per browser that asked for pushes. the switches and muted channels are copies of
+// what the browser keeps locally, since the server has to decide without asking it
+const pushSubscriptions = sqliteTable(
+  'push_subscriptions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    notifyAll: integer('notify_all', { mode: 'boolean' }).notNull(),
+    notifyMentions: integer('notify_mentions', { mode: 'boolean' }).notNull(),
+    notifyDms: integer('notify_dms', { mode: 'boolean' }).notNull(),
+    notifyReplies: integer('notify_replies', { mode: 'boolean' }).notNull(),
+    mutedChannelIds: text('muted_channel_ids', { mode: 'json' })
+      .$type<number[]>()
+      .notNull(),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at').notNull()
+  },
+  (t) => [
+    uniqueIndex('push_subscriptions_endpoint_idx').on(t.endpoint),
+    index('push_subscriptions_user_idx').on(t.userId)
+  ]
+);
+
 const pluginData = sqliteTable('plugin_data', {
   pluginId: text('plugin_id').notNull().primaryKey(),
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
@@ -665,6 +705,8 @@ export {
   pluginData,
   pluginStorage,
   pluginUserData,
+  pushSubscriptions,
+  pushVapidKeys,
   rolePermissions,
   roles,
   settings,

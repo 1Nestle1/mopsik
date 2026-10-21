@@ -16,9 +16,11 @@ import {
   useMessageSentSound,
   useNotificationSounds
 } from '@/features/app/hooks';
-import { Group, Switch } from '@sharkord/ui';
+import { Button, Group, Switch } from '@sharkord/ui';
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNotificationPermission } from './hooks/use-notification-permission';
+import { usePushSwitch } from './hooks/use-push-switch';
 
 type TNotificationsValues = {
   all: boolean;
@@ -37,6 +39,12 @@ const Notifications = memo(() => {
   const replies = useBrowserNotificationsForReplies();
   const sounds = useNotificationSounds();
   const sentSound = useMessageSentSound();
+  const { permission, requestPermission } = useNotificationPermission();
+  const push = usePushSwitch(requestPermission);
+
+  const handleRequestPermission = useCallback(async () => {
+    await requestPermission();
+  }, [requestPermission]);
 
   const onSave = useCallback(async (values: TNotificationsValues) => {
     // TODO: refactor this later
@@ -85,6 +93,27 @@ const Notifications = memo(() => {
       title={t('notificationsTitle')}
       description={t('notificationsDesc')}
     >
+      {permission !== 'unsupported' && (
+        <Group
+          label={t('notificationPermissionTitle')}
+          description={t(`notificationPermission_${permission}`)}
+        >
+          {permission === 'default' && (
+            <Button size="sm" onClick={handleRequestPermission}>
+              {t('notificationPermissionRequest')}
+            </Button>
+          )}
+        </Group>
+      )}
+      {push.isSupported && (
+        <Group label={t('pushLabel')} description={t('pushDesc')}>
+          <Switch
+            checked={push.isSubscribed}
+            disabled={push.isBusy || permission === 'denied'}
+            onCheckedChange={push.onCheckedChange}
+          />
+        </Group>
+      )}
       <Group label={t('allMessagesLabel')} description={t('allMessagesDesc')}>
         <Switch checked={values.all} onCheckedChange={handleAllChange} />
       </Group>

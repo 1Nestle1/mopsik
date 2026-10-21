@@ -1,21 +1,23 @@
 import {
-  browserNotificationsForDmsSelector,
-  browserNotificationsForMentionsSelector,
-  browserNotificationsForRepliesSelector,
-  browserNotificationsSelector,
   isChannelMutedSelector,
+  notificationPreferencesSelector,
   threadSidebarDataSelector
 } from '@/features/app/selectors';
 import { store } from '@/features/store';
+import { logDebug } from '@/helpers/browser-logger';
 import { getFileUrl } from '@/helpers/get-file-url';
+import { getServiceWorkerRegistration } from '@/helpers/push-notifications';
 import { playSound } from '@/helpers/sounds';
+import type { TMessageJumpToTarget } from '@/types';
 import {
+  getMessageNotificationText,
   getPlainTextFromHtml,
   hasMention,
+  shouldNotify,
   TYPING_MS,
   type TJoinedMessage
 } from '@sharkord/shared';
-import { markChannelAsRead } from '../actions';
+import { jumpToMessage, markChannelAsRead } from '../actions';
 import {
   channelByIdSelector,
   isChannelTextVisibleByIdSelector
@@ -30,7 +32,7 @@ import {
 } from '../users/selectors';
 import { threadMessagesMapSelector } from './selectors';
 
-const sendBrowserNotification = (
+const sendBrowserNotification = async (
   message: TJoinedMessage,
   channelId: number,
   isDm = false
@@ -50,17 +52,43 @@ const sendBrowserNotification = (
     return;
   }
 
-  const authorName = isPluginMessage && plugin ? plugin.name : user.name;
-  const textContent = getPlainTextFromHtml(message.content ?? '');
+  const { title, body } = getMessageNotificationText({
+    authorName: isPluginMessage && plugin ? plugin.name : user.name,
+    channelName: channel.name,
+    isDm,
+    plainText: getPlainTextFromHtml(message.content ?? '')
+  });
+  const options = {
+    body,
+    icon: user.avatar ? getFileUrl(user.avatar) : undefined,
+    // push notifications use the same tag, so a message the tab and the push both announce
+    // shows up once
+    tag: `message-${message.id}`
+  };
+  const target: TMessageJumpToTarget = {
+    channelId,
+    // a thread reply lives in the thread panel, so the jump lands on the message it answers
+    messageId: message.parentMessageId ?? message.id,
+    isDm
+  };
 
-  const title = isDm
-    ? `${authorName} (DM)`
-    : `${authorName} in #${channel?.name ?? 'unknown'}`;
+  // android's chrome refuses notifications made by the page itself, so whenever the service
+  // worker is there it shows them, and its click comes back through usePushNotifications
+  const registration = await getServiceWorkerRegistration();
 
-  const body = textContent ? textContent : 'Sent an attachment';
-  const icon = user?.avatar ? getFileUrl(user.avatar) : undefined;
+  if (registration) {
+    await registration.showNotification(title, { ...options, data: target });
 
-  new Notification(title, { body, icon });
+    return;
+  }
+
+  const notification = new Notification(title, options);
+
+  notification.onclick = () => {
+    window.focus();
+    notification.close();
+    jumpToMessage(target);
+  };
 };
 
 const typingTimeouts: { [key: string]: NodeJS.Timeout } = {};
@@ -136,9 +164,6 @@ export const addMessages = (
   if (isSubscriptionMessage && messages.length > 0) {
     const state = store.getState();
     const ownUserId = ownUserIdSelector(state);
-    const hasBrowserNotificationsEnabled = browserNotificationsSelector(state);
-    const notificationsForMentionsOnly =
-      browserNotificationsForMentionsSelector(state);
     const targetMessage = messages[0];
     const isFromOwnUser =
       targetMessage.userId && ownUserId === targetMessage.userId;
@@ -168,35 +193,26 @@ export const addMessages = (
       // only send browser notifications if the user is not currently viewing this channel
       if (!isChannelTextVisible || isWindowHidden) {
         const channel = channelByIdSelector(state, channelId);
-        const isDmChannel = !!channel?.isDm;
-        const hasDmNotificationsEnabled =
-          browserNotificationsForDmsSelector(state);
-        const hasRepliesNotificationsEnabled =
-          browserNotificationsForRepliesSelector(state);
-
-        if (isDmChannel && hasDmNotificationsEnabled) {
-          sendBrowserNotification(targetMessage, channelId, true);
-        } else if (notificationsForMentionsOnly) {
-          const ownRoleIds = ownUserRoleIdsSelector(state);
-          const isMentioned = hasMention(
+        const ownRoleIds = ownUserRoleIdsSelector(state);
+        const preferences = notificationPreferencesSelector(state);
+        const relation = {
+          isDm: !!channel?.isDm,
+          isMentioned: hasMention(
             targetMessage.content ?? null,
             ownUserId,
             ownRoleIds
-          );
-
-          if (isMentioned) {
-            sendBrowserNotification(targetMessage, channelId);
-          }
-        } else if (hasBrowserNotificationsEnabled) {
-          sendBrowserNotification(targetMessage, channelId);
-        } else if (hasRepliesNotificationsEnabled) {
-          const isReplyToOwnMessage =
+          ),
+          isReplyToOwnMessage:
             !!targetMessage.replyToMessageId &&
-            targetMessage.replyTo?.userId === ownUserId;
+            targetMessage.replyTo?.userId === ownUserId
+        };
 
-          if (isReplyToOwnMessage) {
-            sendBrowserNotification(targetMessage, channelId);
-          }
+        if (shouldNotify(preferences, relation)) {
+          sendBrowserNotification(
+            targetMessage,
+            channelId,
+            relation.isDm
+          ).catch((error) => logDebug('Could not show a notification', error));
         }
       }
     }

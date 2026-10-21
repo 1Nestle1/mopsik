@@ -93,7 +93,8 @@ const zConfig = z.object({
     pluginRoute: zRateLimiter,
     oidc: zRateLimiter,
     streamKey: zRateLimiter,
-    whip: zRateLimiter
+    whip: zRateLimiter,
+    pushSubscription: zRateLimiter
   })
 });
 
@@ -234,6 +235,11 @@ const defaultConfig: TConfig = {
     // obs retries a refused stream on its own, so this has room for a few reconnects
     whip: {
       maxRequests: 20,
+      windowMs: 60_000
+    },
+    // every change to a notification switch or a channel mute is synced to the subscription
+    pushSubscription: {
+      maxRequests: 30,
       windowMs: 60_000
     }
   }

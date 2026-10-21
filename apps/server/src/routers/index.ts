@@ -6,6 +6,7 @@ import { emojisRouter } from './emojis';
 import { filesRouter } from './files';
 import { invitesRouter } from './invites';
 import { messagesRouter } from './messages';
+import { notificationsRouter } from './notifications';
 import { othersRouter } from './others';
 import { pluginsRouter } from './plugins';
 import { rolesRouter } from './roles';
@@ -26,7 +27,8 @@ const appRouter = t.router({
   voice: voiceRouter,
   categories: categoriesRouter,
   plugins: pluginsRouter,
-  streaming: streamingRouter
+  streaming: streamingRouter,
+  notifications: notificationsRouter
 });
 
 type AppRouter = typeof appRouter;

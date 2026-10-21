@@ -341,6 +341,9 @@ class PluginManager {
   public getPluginLogo = (pluginId: string): string | undefined =>
     this.loadedManifests.get(pluginId)?.logo;
 
+  public getPluginName = (pluginId: string): string | undefined =>
+    this.loadedManifests.get(pluginId)?.name;
+
   public getActivePluginMetadata = (): TPluginMetadata[] =>
     Array.from(this.loadedManifests.entries()).map(([pluginId, manifest]) => ({
       pluginId,

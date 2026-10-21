@@ -65,15 +65,15 @@ const initialState: TAppState = {
   ),
   browserNotificationsForMentions: getLocalStorageItemBool(
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_MENTIONS,
-    false
+    true
   ),
   browserNotificationsForDms: getLocalStorageItemBool(
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_DMS,
-    false
+    true
   ),
   browserNotificationsForReplies: getLocalStorageItemBool(
     LocalStorageKey.BROWSER_NOTIFICATIONS_FOR_REPLIES,
-    false
+    true
   ),
   notificationSounds: getLocalStorageItemBool(
     LocalStorageKey.NOTIFICATION_SOUNDS,

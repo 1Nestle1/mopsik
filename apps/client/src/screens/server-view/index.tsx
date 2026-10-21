@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { Permission, TestId } from '@sharkord/shared';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { ContentWrapper } from './content-wrapper';
+import { useNotificationsPrompt } from './hooks/use-notifications-prompt';
+import { usePushNotifications } from './hooks/use-push-notifications';
 import { PreventBrowser } from './prevent-browser';
 
 const ServerView = memo(() => {
@@ -33,6 +35,9 @@ const ServerView = memo(() => {
   const publicSettings = usePublicServerSettings();
   const previousServerChannelIdRef = useRef<number | undefined>(undefined);
   const { isOpen: isThreadSidebarOpen } = useThreadSidebar();
+
+  usePushNotifications();
+  useNotificationsPrompt();
 
   const handleDesktopRightSidebarToggle = useCallback(() => {
     setIsDesktopRightSidebarOpen((prev) => !prev);

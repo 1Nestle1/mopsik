@@ -19,6 +19,8 @@ import {
   micModeSelector,
   modViewOpenSelector,
   modViewUserIdSelector,
+  mutedChannelIdsSelector,
+  notificationPreferencesSelector,
   notificationSoundsSelector,
   pluginSlotDebugSelector,
   pushToTalkSelectedSelector,
@@ -73,6 +75,11 @@ export const useMessageJumpTarget = () =>
 
 export const useBrowserNotificationsForReplies = () =>
   useSelector(browserNotificationsForRepliesSelector);
+
+export const useNotificationPreferences = () =>
+  useSelector(notificationPreferencesSelector);
+
+export const useMutedChannelIds = () => useSelector(mutedChannelIdsSelector);
 
 export const useVoiceChatSidebar = () =>
   useSelector(voiceChatSidebarDataSelector);

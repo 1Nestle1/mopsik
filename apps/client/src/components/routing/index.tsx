@@ -16,6 +16,7 @@ import { ServerView } from '@/screens/server-view';
 import { DisconnectCode } from '@sharkord/shared';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAppBadge } from './hooks/use-app-badge';
 import { useDocumentTitle } from './hooks/use-document-title';
 import { useOidcAutoRedirect } from './hooks/use-oidc-auto-redirect';
 
@@ -29,6 +30,7 @@ const Routing = memo(() => {
   const isReconnecting = useIsReconnecting();
 
   useDocumentTitle();
+  useAppBadge();
   useOidcAutoRedirect();
 
   if (isAppLoading || isPluginsLoading) {

@@ -8,6 +8,7 @@ import { count, eq } from 'drizzle-orm';
 import { db } from '.';
 import { getCapabilityAccessRules } from '../helpers/plugin-capability-access';
 import { logger } from '../logger';
+import { enqueueMessagePush } from '../queues/push-notifications';
 import { pubsub } from '../utils/pubsub';
 import {
   channelUserCan,
@@ -54,6 +55,9 @@ const publishMessage = async (
   );
 
   pubsub.publishFor(affectedUserIds, targetEvent, message);
+
+  // every way a message gets created ends up here, a plugin's included
+  if (type === 'create') enqueueMessagePush(message);
 
   // thread replies should not increment the channel's unread count
   if (message.parentMessageId) return;

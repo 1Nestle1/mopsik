@@ -126,9 +126,11 @@ One menu everywhere a user appears: member list, message author, voice row, voic
   - SDP handling with `sdp-transform` (already a dependency). The official `mediasoup-sdp-bridge` was never published to npm (the name there is a security placeholder), so we don't use it.
   - Server upload ≈ stream bitrate × viewers: 6 Mbps × 5 friends = 30 Mbps.
 - **4.3 OBS guide, S: done (local), en + ru.** Settings page shows the URL and key, with a short "Set up OBS" guide (Service: WHIP, x264 or NVENC, Opus audio, CBR). Works on day one.
-- **4.4 "MOPSCORD Stream" small app, L:**
-  - First a single GStreamer command proves it: window capture, that app's sound only (Windows 11), GPU H.264 encoding, sent to the same `/whip` endpoint.
-  - Then a tiny Tauri window: pick an app, Start / Stop. Could later grow into a desktop client with global push-to-talk.
+- **4.4 "MOPSCORD Stream" desktop app, L: built (local, `apps/stream`), streamed end to end to the dev server.** Electron plus a small C# helper (`AppAudio.exe`) for one app's sound.
+  - Pick a screen or a window, switch while live. Sound: the window's own app, one app, everything except one app (Windows 11), the whole system, or an input device. Presets plus resolution, fps, bitrate, codec, Motion / Detail, Opus bitrate. Live stats (size, fps, bitrate, GPU or CPU encoder). en + ru.
+  - Found while testing: Chrome starts a connection at about 300 kbps, shrinks the picture under 360p and drops the graphics card encoder (NVENC) for OpenH264 for good. Fixed by telling it the start bitrate in the answer (`x-google-start-bitrate`). **Not re-tested yet.**
+  - Window capture in Electron 44 tops out at about 15 fps (Chromium's window capturer; no switch changes it), screen capture runs at 40 to 57. The app says so on the Windows tab: for games, pick the screen. A later fix would crop a screen capture to the window.
+  - Still to run: its unit tests, `bun install` (dependencies moved to dev), the portable exe build (`bun run dist`), and one more live test.
 - **4.5 Going live, S to M:** LIVE badge in the sidebar and Lounge, a "started streaming, Watch" toast, theater mode, stream audio muted until you click (upstream [#749](https://github.com/sharkord/sharkord/issues/749)), hide everyone's video (upstream [#123](https://github.com/sharkord/sharkord/issues/123)).
 - **4.6 Watch party (optional), M:** everyone plays the same YouTube link in sync.
 
@@ -147,11 +149,16 @@ Ranked by value for a friends group divided by effort, voice first. Upstream vot
 6. **Nightly backup of Sharkord's data on the server** with a week of copies. S, needs the server owner's OK
 
 **Fun and presence (the spice):**
-7. **Soundboard**: short clips played into the call by the server, so everyone hears them in sync. M
+7. **Soundboard: use the official "Soundboard" plugin** from the plugin shop (Sharkord org, SDK 2, v0.0.4): uploads with loudness normalizing, cooldowns, hotkeys, a badge on whoever plays a sound. Our client still renders every slot it uses (voice controls, user settings, voice card and row). Needs the new build deployed first: the live server still runs the build from before the upstream merge, which brought SDK 2.
 8. **Voice messages in chat** (+5, [#771](https://github.com/sharkord/sharkord/issues/771)). M
-9. **Phone notifications** for mentions and DMs (web push, works with the site on the home screen). M
-10. **GIF picker** through our own server, since outside services are often blocked in Russia. M
+9. **Notifications: written (local), not run yet.**
+   - In the tab: one shared rule (`shouldNotify` in `packages/shared`) fixes "All messages" silencing mentions and replies. Mentions, DMs and replies are on by default. A one-time "Turn on" toast asks for the browser's permission, and the settings page shows the permission. Clicking a notification opens the message. The unread count shows on the installed app's icon. Notification text no longer has hardcoded English.
+   - Push, for closed tabs and phones: a service worker (`public/sw.js`), a per-device switch in settings, and `push_subscriptions` plus `push_vapid_keys` tables (migration not generated yet). The server pushes only to people with no tab open (the tab already told the others), with the same rule, mutes included. Only the browsers' own push services are accepted as endpoints. Uses the `web-push` package (not installed yet). On an iPhone it needs MOPSCORD added to the home screen.
+10. **GIF picker: use the official "Klipy" plugin** (verified, SDK 2): a GIF button by the message box, favorites, and `/gif`. Needs a free Klipy API key (klipy.com/developers) in its plugin settings. Check that Klipy's images open from Russia before relying on it; if they don't, a proxy through our server is the fallback.
 11. **Desktop app** with global push-to-talk (a browser can't see keys while you're in a game). Shares a codebase with 4.4. L
+12. **Voice changer, researched:**
+    - **Built in, M:** a "Voice effect" choice in Settings → Voice, one more worklet after the noise gate in the mic chain, so only what others hear changes. Robot (ring modulation), radio (band pass plus light distortion) and echo are plain Web Audio nodes with no added delay. Deeper or higher voice needs a pitch shifter: the phase vocoder in [phaze](https://github.com/olvb/phaze) (Unlicense, an AudioWorklet already) sounds best; a delay-line shifter like Tone.js's is cheaper with more warble. Expect 20 to 60 ms of extra delay for pitch.
+    - **AI voices (sounding like a specific person), not built in:** RVC needs a GPU and Python and reports 90 to 170 ms even on the desktop; nothing proven runs it in a browser tab. It already works today without code: run the [w-okada voice changer](https://github.com/w-okada/voice-changer) (or Voicemod), send it to a virtual cable (VB-Cable), and pick that cable as the microphone in MOPSCORD.
 
 **Smaller polish:** chat timestamps that show only the time, a DM header with the person's name, "Standard" noise suppression by default, per-channel bitrate, search with SQLite full-text search.
 
