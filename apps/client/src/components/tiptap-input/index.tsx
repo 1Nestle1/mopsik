@@ -37,7 +37,7 @@ import {
   MENTION_STORAGE_KEY,
   MentionSuggestion
 } from './extensions/mentions/suggestion';
-import { mergeEmojis, type TEmojiItem } from './helpers';
+import { isSuggestionListOpen, mergeEmojis, type TEmojiItem } from './helpers';
 
 type TTiptapInputHandle = {
   insertEmoji: (emoji: TEmojiItem) => void;
@@ -174,17 +174,13 @@ const TiptapInput = memo(
             return true;
           }
 
-          const suggestionElement = document.querySelector('.bg-popover');
-          const hasSuggestions =
-            suggestionElement && document.body.contains(suggestionElement);
-
           if (event.key === 'Enter') {
             if (event.shiftKey) {
               return false;
             }
 
             // if suggestions are active, don't handle Enter - let the suggestion handle it
-            if (hasSuggestions) {
+            if (isSuggestionListOpen()) {
               return false;
             }
 

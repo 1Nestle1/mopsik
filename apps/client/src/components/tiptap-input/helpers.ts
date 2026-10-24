@@ -80,7 +80,16 @@ const mergeEmojis = <
   ...withoutShadowedEmojis(builtInEmojis, customEmojis)
 ];
 
+// marks the open mention, emoji, channel or command list (see suggestion-list.tsx). a styling
+// class is no use for this: every message's hover bar shares the popover colour and is always in
+// the page, which made enter add a line instead of sending
+const SUGGESTION_LIST_SELECTOR = '[data-suggestion-list]';
+
+const isSuggestionListOpen = () =>
+  document.querySelector(SUGGESTION_LIST_SELECTOR) !== null;
+
 export {
+  isSuggestionListOpen,
   isTextPresentation,
   mergeEmojis,
   shouldUseFallbackImage,

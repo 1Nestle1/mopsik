@@ -126,6 +126,7 @@ const SuggestionList = <TItem,>({
       )}
       role="listbox"
       aria-label={ariaLabel}
+      data-suggestion-list
     >
       {items.map((item, index) => (
         <SuggestionListItem
