@@ -1,4 +1,5 @@
 import { ErrorBoundary } from '@/components/error-boundary';
+import { SaveGifButton } from '@/components/gif-picker/save-gif-button';
 import { PluginMessageComponents } from '@/components/plugin-message-components';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import { RelativeTime } from '@/components/relative-time';
@@ -169,16 +170,20 @@ const MessageRenderer = memo(
         {message.files.length > 0 && !disableFiles && (
           <div className="flex gap-1 flex-wrap">
             {message.files.map((file) => (
-              <FileCard
-                key={file.id}
-                name={file.originalName}
-                extension={file.extension}
-                size={file.size}
-                onRemove={
-                  isOwnMessage ? () => onRemoveFileClick(file.id) : undefined
-                }
-                href={getFileUrl(file)}
-              />
+              <div key={file.id} className="flex min-w-0 items-center gap-1.5">
+                <FileCard
+                  name={file.originalName}
+                  extension={file.extension}
+                  size={file.size}
+                  onRemove={
+                    isOwnMessage ? () => onRemoveFileClick(file.id) : undefined
+                  }
+                  href={getFileUrl(file)}
+                />
+                {file.extension.toLowerCase() === '.gif' && (
+                  <SaveGifButton file={file} title={file.originalName} />
+                )}
+              </div>
             ))}
           </div>
         )}

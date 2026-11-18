@@ -1,3 +1,4 @@
+import { Nickname } from '@/components/nickname';
 import { PluginAvatar } from '@/components/plugin-avatar';
 import { RelativeTime } from '@/components/relative-time';
 import { UserAvatar } from '@/components/user-avatar';
@@ -51,7 +52,7 @@ const MessagesGroup = memo(
       group.length === 1 && !!firstMessage.replyToMessageId;
 
     const groupContent = (
-      <div className="flex min-w-0 max-w-dvw gap-1 pl-2 pt-2 pr-2">
+      <div className="flex min-w-0 max-w-dvw gap-2 px-4 pt-3">
         {isPluginMessage ? (
           <PluginAvatar
             name={pluginMetadata?.name}
@@ -67,16 +68,18 @@ const MessagesGroup = memo(
           />
         )}
         <div className="flex min-w-0 flex-col w-full">
-          <div className="flex gap-2 items-baseline pl-1 select-none">
-            <span
+          <div className="flex min-w-0 items-baseline gap-2 pl-1 select-none">
+            <Nickname
+              name={authorName}
+              appearance={
+                isDeletedUser || isPluginMessage ? null : user?.nicknameStyle
+              }
               className={cn(
-                'font-semibold',
+                'min-w-0 truncate font-semibold',
                 isDeletedUser && 'line-through text-muted-foreground',
                 isPluginMessage && 'text-primary/80'
               )}
-            >
-              {authorName}
-            </span>
+            />
             {isPluginMessage && (
               <span className="inline-flex items-center rounded-full bg-primary/12 px-1.5 py-0.5 text-[11px] font-medium text-primary uppercase tracking-wide">
                 bot
@@ -85,7 +88,7 @@ const MessagesGroup = memo(
             <RelativeTime date={date}>
               {(relativeTime) => (
                 <span
-                  className="text-muted-foreground text-xs tabular-nums"
+                  className="shrink-0 text-muted-foreground text-xs tabular-nums"
                   title={format(date, 'PPpp')}
                 >
                   {relativeTime}

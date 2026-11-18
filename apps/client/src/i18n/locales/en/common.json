@@ -172,5 +172,34 @@
   "commandArgYes": "Yes",
   "commandArgNo": "No",
   "commandArgMissing": "/{{commandName}} needs a value for {{argName}}.",
-  "mutedByModerator": "You were muted by a moderator."
+  "mutedByModerator": "You were muted by a moderator.",
+  "composeGif": "Add a GIF",
+  "gifSearch": "Search reaction GIFs",
+  "gifSearchProvider": "Search {{provider}}",
+  "gifSource": "GIF source",
+  "gifInsert": "Add {{title}}",
+  "gifLoading": "Loading GIFs…",
+  "gifEmpty": "No GIFs found.",
+  "gifError": "Could not load GIFs. Try another search or source.",
+  "gifLibrary": {
+    "hello": "Hello",
+    "laugh": "Laugh",
+    "celebrate": "Celebrate",
+    "love": "Love",
+    "facepalm": "Facepalm",
+    "brb": "Be right back"
+  },
+  "myGifs": {
+    "tab": "My GIFs",
+    "search": "Search my GIFs",
+    "import": "Import GIF",
+    "play": "Play previews",
+    "pause": "Pause previews",
+    "save": "Save {{title}} to My GIFs",
+    "remove": "Remove {{title}} from My GIFs",
+    "empty": "Bookmark a reaction or import a GIF from this device.",
+    "storageError": "Could not update My GIFs on this device.",
+    "importError": "Choose a valid GIF under 8 MB and check that your library has space.",
+    "saved": "Saved to My GIFs"
+  }
 }

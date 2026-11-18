@@ -133,5 +133,34 @@
   "commandArgYes": "Ano",
   "commandArgNo": "Ne",
   "commandArgMissing": "/{{commandName}} potřebuje hodnotu pro {{argName}}.",
-  "mutedByModerator": "Moderátor vám vypnul mikrofon."
+  "mutedByModerator": "Moderátor vám vypnul mikrofon.",
+  "composeGif": "Přidat GIF",
+  "gifSearch": "Hledat reakční GIFy",
+  "gifSearchProvider": "Hledat na {{provider}}",
+  "gifSource": "Zdroj GIFů",
+  "gifInsert": "Přidat: {{title}}",
+  "gifLoading": "Načítají se GIFy…",
+  "gifEmpty": "Žádné GIFy nenalezeny.",
+  "gifError": "GIFy se nepodařilo načíst. Zkuste jiný dotaz nebo zdroj.",
+  "gifLibrary": {
+    "hello": "Ahoj",
+    "laugh": "Smích",
+    "celebrate": "Oslava",
+    "love": "Láska",
+    "facepalm": "Gesto bezradnosti",
+    "brb": "Hned jsem zpět"
+  },
+  "myGifs": {
+    "tab": "Moje GIFy",
+    "search": "Hledat v mých GIFech",
+    "import": "Importovat GIF",
+    "play": "Přehrát náhledy",
+    "pause": "Pozastavit náhledy",
+    "save": "Uložit {{title}} do mých GIFů",
+    "remove": "Odebrat {{title}} z mých GIFů",
+    "empty": "Uložte reakci nebo importujte GIF z tohoto zařízení.",
+    "storageError": "Knihovnu GIFů se na tomto zařízení nepodařilo aktualizovat.",
+    "importError": "Vyberte platný GIF do 8 MB a zkontrolujte místo v knihovně.",
+    "saved": "Uloženo do mých GIFů"
+  }
 }

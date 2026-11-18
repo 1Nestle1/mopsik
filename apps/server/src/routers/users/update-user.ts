@@ -2,11 +2,13 @@ import {
   DELETED_USER_IDENTITY_AND_NAME,
   HEX_COLOR_REGEX,
   MAX_USER_NAME_LENGTH,
+  NICKNAME_EFFECTS,
   type TBeforeProfileUpdatePayload,
   type TBeforeProfileUpdateUpdate
 } from '@sharkord/shared';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { config } from '../../config';
 import { db } from '../../db';
 import { publishUser } from '../../db/publishers';
 import { users } from '../../db/schema';
@@ -14,7 +16,7 @@ import { pluginManager } from '../../plugins';
 import { eventBus } from '../../plugins/event-bus';
 import { runHook } from '../../plugins/run-hook';
 import { invariant } from '../../utils/invariant';
-import { protectedProcedure } from '../../utils/trpc';
+import { protectedProcedure, rateLimitedProcedure } from '../../utils/trpc';
 
 const zName = z
   .string()
@@ -27,12 +29,23 @@ const zName = z
 
 const zBio = z.string().max(160).optional();
 
-const updateUserRoute = protectedProcedure
+const updateUserRoute = rateLimitedProcedure(protectedProcedure, {
+  ...config.rateLimiters.updateProfile,
+  logLabel: 'updateProfile'
+})
   .input(
     z.object({
       name: zName,
       profileColor: z.string().regex(HEX_COLOR_REGEX, 'Invalid hex color'),
-      bio: zBio
+      bio: zBio,
+      nicknameStyle: z
+        .object({
+          color: z.string().regex(HEX_COLOR_REGEX, 'Invalid nickname color'),
+          accent: z.string().regex(HEX_COLOR_REGEX, 'Invalid nickname accent'),
+          effect: z.enum(NICKNAME_EFFECTS)
+        })
+        .nullable()
+        .optional()
     })
   )
   .mutation(async ({ ctx, input }) => {
@@ -60,6 +73,7 @@ const updateUserRoute = protectedProcedure
       .set({
         name,
         profileColor: input.profileColor,
+        nicknameStyle: input.nicknameStyle,
         bio: bio ?? null
       })
       .where(eq(users.id, ctx.userId))

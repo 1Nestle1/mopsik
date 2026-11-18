@@ -40,6 +40,20 @@ separately.
 search), `--seed <number>` changes the cast, and `--counting <n>` resizes the numbered channel
 (`0` skips it). The same seed always produces the same server.
 
+## GIF sources
+
+MOPSCORD ships six original pixel-art shark reactions in `apps/client/public/reaction-gifs`.
+The built-in library is available on its own domain without API credentials.
+My GIFs stores bookmarked reactions and imported GIF files in IndexedDB for the signed-in user on
+that browser. Local files use the regular attachment upload when selected from the library.
+
+On deployments that allow direct browser requests to third parties, configure
+`VITE_GIPHY_API_KEY` or `VITE_KLIPY_API_KEY` in an untracked `apps/client/.env.local`
+before building the client. Use browser API keys, which Vite includes in the public bundle.
+Each configured provider gets its own search tab. With both keys unset, the picker uses only
+the built-in library and third-party GIFs in chat display their text descriptions.
+The GIPHY attribution images come from the [official GIPHY brand kit](https://developers.giphy.com/docs/api/quick-start-guide/#attribution).
+
 ## Testing
 
 To run tests, use the following command:

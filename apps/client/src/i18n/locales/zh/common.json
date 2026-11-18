@@ -133,5 +133,34 @@
   "commandArgYes": "是",
   "commandArgNo": "否",
   "commandArgMissing": "/{{commandName}} 需要为 {{argName}} 提供一个值。",
-  "mutedByModerator": "你已被管理员禁言。"
+  "mutedByModerator": "你已被管理员禁言。",
+  "composeGif": "添加 GIF",
+  "gifSearch": "搜索反应 GIF",
+  "gifSearchProvider": "在 {{provider}} 中搜索",
+  "gifSource": "GIF 来源",
+  "gifInsert": "添加「{{title}}」",
+  "gifLoading": "正在加载 GIF…",
+  "gifEmpty": "未找到 GIF。",
+  "gifError": "无法加载 GIF。请尝试其他搜索词或来源。",
+  "gifLibrary": {
+    "hello": "你好",
+    "laugh": "大笑",
+    "celebrate": "庆祝",
+    "love": "爱心",
+    "facepalm": "捂脸",
+    "brb": "马上回来"
+  },
+  "myGifs": {
+    "tab": "我的 GIF",
+    "search": "搜索我的 GIF",
+    "import": "导入 GIF",
+    "play": "播放预览",
+    "pause": "暂停预览",
+    "save": "将「{{title}}」保存到我的 GIF",
+    "remove": "从我的 GIF 中移除「{{title}}」",
+    "empty": "收藏一个反应，或从此设备导入 GIF。",
+    "storageError": "无法更新此设备上的 GIF 收藏。",
+    "importError": "请选择不超过 8 MB 的有效 GIF，并检查收藏空间。",
+    "saved": "已保存到我的 GIF"
+  }
 }

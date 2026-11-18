@@ -554,5 +554,22 @@
   "hotkeysSaved": "Configurações de atalhos salvas",
   "failedSaveHotkeys": "Falha ao salvar as configurações de atalhos",
   "hotkeysBridgeFailed": "Não encontrado, parou de tentar",
-  "hotkeysBridgeRetry": "Tentar conectar"
+  "hotkeysBridgeRetry": "Tentar conectar",
+  "appearanceTab": "Aparência",
+  "appearanceDescription": "Escolha a aparência do MOPSCORD neste dispositivo.",
+  "themeDark": "Escuro",
+  "themeLight": "Claro",
+  "themeSystem": "Sistema",
+  "nicknameStyle": {
+    "label": "Efeito do apelido",
+    "description": "Escolha a aparência do seu apelido no chat e no perfil.",
+    "default": "Padrão",
+    "plain": "Cor sólida",
+    "glow": "Brilho",
+    "underline": "Sublinhado",
+    "gradient": "Fundo em degradê",
+    "color": "Cor",
+    "accent": "Segunda cor",
+    "preview": "Prévia"
+  }
 }

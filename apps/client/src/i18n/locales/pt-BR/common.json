@@ -135,5 +135,34 @@
   "commandArgYes": "Sim",
   "commandArgNo": "Não",
   "commandArgMissing": "/{{commandName}} precisa de um valor para {{argName}}.",
-  "mutedByModerator": "Você foi silenciado por um moderador."
+  "mutedByModerator": "Você foi silenciado por um moderador.",
+  "composeGif": "Adicionar um GIF",
+  "gifSearch": "Buscar GIFs de reação",
+  "gifSearchProvider": "Buscar no {{provider}}",
+  "gifSource": "Fonte dos GIFs",
+  "gifInsert": "Adicionar: {{title}}",
+  "gifLoading": "Carregando GIFs…",
+  "gifEmpty": "Nenhum GIF encontrado.",
+  "gifError": "Não foi possível carregar os GIFs. Tente outra busca ou fonte.",
+  "gifLibrary": {
+    "hello": "Olá",
+    "laugh": "Risada",
+    "celebrate": "Comemoração",
+    "love": "Amor",
+    "facepalm": "Mão no rosto",
+    "brb": "Já volto"
+  },
+  "myGifs": {
+    "tab": "Meus GIFs",
+    "search": "Buscar nos meus GIFs",
+    "import": "Importar GIF",
+    "play": "Reproduzir prévias",
+    "pause": "Pausar prévias",
+    "save": "Salvar {{title}} em Meus GIFs",
+    "remove": "Remover {{title}} de Meus GIFs",
+    "empty": "Salve uma reação ou importe um GIF deste dispositivo.",
+    "storageError": "Não foi possível atualizar sua biblioteca neste dispositivo.",
+    "importError": "Escolha um GIF válido de até 8 MB e verifique o espaço na biblioteca.",
+    "saved": "Salvo em Meus GIFs"
+  }
 }

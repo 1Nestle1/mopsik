@@ -30,6 +30,7 @@ import {
 import { PluginCommandNode } from './extensions/commands/plugin-command-node';
 import { SlashCommands } from './extensions/commands/slash-commands-extension';
 import { EmojiSuggestion } from './extensions/emojis/suggestions';
+import { Gif } from './extensions/gif';
 import { Mention } from './extensions/mentions';
 import { MentionNode } from './extensions/mentions/node';
 import { RoleMentionNode } from './extensions/mentions/role-node';
@@ -41,6 +42,7 @@ import { isSuggestionListOpen, mergeEmojis, type TEmojiItem } from './helpers';
 
 type TTiptapInputHandle = {
   insertEmoji: (emoji: TEmojiItem) => void;
+  insertGif: (src: string, title: string) => void;
   focus: () => void;
 };
 
@@ -134,6 +136,7 @@ const TiptapInput = memo(
           suggestion: ChannelReferenceSuggestion
         }),
         ChannelReferenceNode,
+        Gif,
         PluginCommandNode.configure({ onSubmit: submit })
       ];
 
@@ -167,7 +170,7 @@ const TiptapInput = memo(
         attributes: {
           'data-testid': TestId.MESSAGE_COMPOSE_EDITOR
         },
-        handleKeyDown: (_view, event) => {
+        handleKeyDown: (view, event) => {
           // block all input when readOnly
           if (readOnlyRef.current) {
             event.preventDefault();
@@ -175,7 +178,12 @@ const TiptapInput = memo(
           }
 
           if (event.key === 'Enter') {
-            if (event.shiftKey) {
+            if (
+              event.shiftKey ||
+              event.isComposing ||
+              view.composing ||
+              event.keyCode === 229
+            ) {
               return false;
             }
 
@@ -185,7 +193,7 @@ const TiptapInput = memo(
             }
 
             event.preventDefault();
-            onSubmitRef.current?.();
+            if (!event.repeat) onSubmitRef.current?.();
             return true;
           }
 
@@ -231,8 +239,22 @@ const TiptapInput = memo(
       }
     };
 
+    const handleGifSelect = useCallback(
+      (src: string, title: string) => {
+        if (!editor || disabled || readOnly) return;
+
+        const chain = editor.chain();
+        chain
+          .focus()
+          .insertContent({ type: Gif.name, attrs: { src, title } })
+          .run();
+      },
+      [editor, disabled, readOnly]
+    );
+
     useImperativeHandle(ref, () => ({
       insertEmoji: handleEmojiSelect,
+      insertGif: handleGifSelect,
       focus: () => editor?.commands.focus()
     }));
 
@@ -306,12 +328,12 @@ const TiptapInput = memo(
       <div className="relative flex min-w-0 flex-1">
         <EditorContent
           editor={editor}
-          className={`w-full tiptap relative transition-colors [&_.ProseMirror]:px-5 [&_.ProseMirror]:py-[14px] [&_.ProseMirror:focus]:outline-none ${
+          className={`w-full tiptap relative transition-colors [&_.ProseMirror]:px-3 [&_.ProseMirror]:py-2.5 [&_.ProseMirror:focus]:outline-none ${
             disabled ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         />
         {isEmpty && placeholder && (
-          <div className="absolute inset-0 px-5 py-[14px] text-muted-foreground/50 pointer-events-none select-none truncate">
+          <div className="absolute inset-0 px-3 py-2.5 text-muted-foreground pointer-events-none select-none truncate">
             {placeholder}
           </div>
         )}

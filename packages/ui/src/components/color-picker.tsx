@@ -1,4 +1,5 @@
-import { PencilIcon } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { useCallback, type ChangeEvent } from 'react';
 import { HexColorPicker } from 'react-colorful';
 import { cn } from '../lib/utils';
 import { Button } from './button';
@@ -10,42 +11,60 @@ type TColorPickerProps = {
   onChange?: (value: string) => void;
   error?: string;
   defaultValue?: string;
+  label?: string;
+  resetLabel?: string;
 };
 
 const ColorPicker = ({
   value,
   onChange,
   defaultValue = '#FFFFFF',
-  error
+  error,
+  label,
+  resetLabel = 'Reset'
 }: TColorPickerProps) => {
+  const color = value || defaultValue;
+  const handleInput = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => {
+      onChange?.(event.currentTarget.value);
+    },
+    [onChange]
+  );
+  const handleReset = useCallback(
+    () => onChange?.(defaultValue),
+    [defaultValue, onChange]
+  );
+
   return (
     <div className="flex flex-col">
       <Popover>
         <PopoverTrigger asChild>
-          <div className="relative group cursor-pointer w-full h-32">
-            <div
-              style={{ backgroundColor: value }}
-              className={cn(
-                'w-full h-32 rounded-md border transition-opacity group-hover:opacity-70',
-                error ? 'border-red-500' : 'border-border'
-              )}
-            />
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
-              <div className="bg-black/50 rounded-full p-3">
-                <PencilIcon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="flex flex-col gap-2 w-fit h-fit p-2 rounded-2xl">
-          <HexColorPicker color={value} onChange={onChange} />
-          <Input value={value} onChange={(e) => onChange?.(e.target.value)} />
           <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => onChange?.(defaultValue)}
+            type="button"
+            variant="outline"
+            aria-label={label}
+            className={cn(
+              'justify-start px-2.5 font-mono',
+              error && 'border-destructive'
+            )}
           >
-            Reset
+            <span
+              className="size-4 rounded-sm border border-border"
+              style={{ backgroundColor: color }}
+            />
+            {color}
+            <ChevronDown className="size-3.5 text-muted-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent align="start" className="flex w-fit flex-col gap-2 p-3">
+          <HexColorPicker color={color} onChange={onChange} />
+          <Input
+            aria-label={label}
+            value={value ?? ''}
+            onChange={handleInput}
+          />
+          <Button type="button" size="sm" variant="ghost" onClick={handleReset}>
+            {resetLabel}
           </Button>
         </PopoverContent>
       </Popover>

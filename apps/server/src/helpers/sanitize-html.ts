@@ -1,4 +1,4 @@
-import { stripZalgo } from '@sharkord/shared';
+import { getGifProvider, stripZalgo } from '@sharkord/shared';
 import sanitize from 'sanitize-html';
 
 // the only images a message legitimately carries are emoji: custom ones served
@@ -97,6 +97,19 @@ const sanitizeMessageHtml = (html: string): string => {
           ? { ...attribs, rel: 'noopener noreferrer' }
           : attribs
       }),
+      span: (tagName, attribs) => {
+        if (attribs['data-type'] !== 'gif') return { tagName, attribs };
+
+        const src = attribs['data-name'];
+
+        return {
+          tagName,
+          attribs:
+            src && getGifProvider(src)
+              ? { 'data-type': 'gif', 'data-name': src }
+              : {}
+        };
+      },
       // an arbitrary remote src makes every member of the channel fetch a URL
       // the sender chose, which is an IP harvester and a read receipt
       img: (tagName, attribs) => {

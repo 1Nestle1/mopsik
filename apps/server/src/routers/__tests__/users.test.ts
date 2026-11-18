@@ -18,6 +18,7 @@ import {
   uploadFile
 } from '../../__tests__/helpers';
 import { tdb } from '../../__tests__/setup';
+import { config } from '../../config';
 import { getUserByToken } from '../../db/queries/users';
 import {
   channels,
@@ -330,6 +331,73 @@ describe('users router', () => {
     expect(updatedUser).toBeDefined();
     expect(updatedUser!.name).toBe('Test User');
     expect(updatedUser!.profileColor).toBe('#00ff00');
+  });
+
+  test('saves, preserves and clears the public nickname style', async () => {
+    const { caller } = await initTest();
+    const profile = { name: 'Updated Name', profileColor: '#ff0000' };
+    const nicknameStyle = {
+      color: '#7195c9',
+      accent: '#bd8cae',
+      effect: 'gradient'
+    } as const;
+
+    await caller.users.update({ ...profile, nicknameStyle });
+    await caller.users.update(profile);
+    const styledUsers = await caller.users.getAll();
+    expect(styledUsers.find(({ id }) => id === 1)?.nicknameStyle).toEqual(
+      nicknameStyle
+    );
+
+    await caller.users.update({ ...profile, nicknameStyle: null });
+    const resetUsers = await caller.users.getAll();
+    expect(resetUsers.find(({ id }) => id === 1)?.nicknameStyle).toBeNull();
+  });
+
+  test('rejects invalid nickname colors and effects', async () => {
+    const { caller } = await initTest(2);
+    const profile = { name: 'Updated Name', profileColor: '#ff0000' };
+    const validStyle = {
+      color: '#7195c9',
+      accent: '#bd8cae',
+      effect: 'plain'
+    } as const;
+
+    await expect(
+      caller.users.update({
+        ...profile,
+        nicknameStyle: { ...validStyle, color: 'red' }
+      })
+    ).rejects.toThrow('Invalid nickname color');
+    await expect(
+      caller.users.update({
+        ...profile,
+        nicknameStyle: { ...validStyle, accent: 'red' }
+      })
+    ).rejects.toThrow('Invalid nickname accent');
+    await expect(
+      caller.users.update({
+        ...profile,
+        nicknameStyle: { ...validStyle, effect: 'invalid' as 'plain' }
+      })
+    ).rejects.toThrow('Invalid option');
+  });
+
+  test('rate limits repeated profile updates', async () => {
+    const { caller } = await initTest(2);
+    const profile = { name: 'Updated Name', profileColor: '#ff0000' };
+
+    for (
+      let request = 0;
+      request < config.rateLimiters.updateProfile.maxRequests;
+      request += 1
+    ) {
+      await caller.users.update(profile);
+    }
+
+    await expect(caller.users.update(profile)).rejects.toThrow(
+      'Too many requests. Please try again shortly.'
+    );
   });
 
   test('should accept a shorthand hex profile color', async () => {

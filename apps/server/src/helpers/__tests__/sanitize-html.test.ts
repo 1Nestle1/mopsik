@@ -1,6 +1,34 @@
 import { describe, expect, test } from 'bun:test';
 import { sanitizeMessageHtml } from '../sanitize-html';
 
+test('keeps built-in and supported provider GIFs with their text fallback', () => {
+  const urls = [
+    '/reaction-gifs/hello.gif',
+    'https://media2.giphy.com/media/v1.Y2lkPTc3/GIF123/200.gif?cid=picker',
+    'https://static.klipy.co/asset/hello.gif'
+  ];
+
+  for (const src of urls) {
+    const markup = `<span data-type="gif" data-name="${src}">Hello</span>`;
+    expect(sanitizeMessageHtml(markup)).toBe(markup);
+  }
+});
+
+test('removes the GIF marker from untrusted sources and keeps its text', () => {
+  const urls = [
+    '/reaction-gifs/unknown.gif',
+    '/reaction-gifs/../uploads/hello.gif',
+    'https://media.giphy.com.invalid/media/GIF123/200.gif',
+    'https://media.giphy.com@other.example/media/GIF123/200.gif',
+    'https://static.klipy.co/asset/document.html'
+  ];
+
+  for (const src of urls) {
+    const markup = `<span data-type="gif" data-name="${src}" class="mention">Hello</span>`;
+    expect(sanitizeMessageHtml(markup)).toBe('<span>Hello</span>');
+  }
+});
+
 describe('sanitize-html', () => {
   test('should preserve <p> tags', () => {
     expect(sanitizeMessageHtml('<p>hello</p>')).toBe('<p>hello</p>');

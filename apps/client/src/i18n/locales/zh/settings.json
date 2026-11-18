@@ -552,5 +552,22 @@
   "hotkeysSaved": "快捷键设置已保存",
   "failedSaveHotkeys": "保存快捷键设置失败",
   "hotkeysBridgeFailed": "未找到，已停止尝试",
-  "hotkeysBridgeRetry": "尝试连接"
+  "hotkeysBridgeRetry": "尝试连接",
+  "appearanceTab": "外观",
+  "appearanceDescription": "选择 MOPSCORD 在此设备上的外观。",
+  "themeDark": "深色",
+  "themeLight": "浅色",
+  "themeSystem": "跟随系统",
+  "nicknameStyle": {
+    "label": "昵称效果",
+    "description": "选择昵称在聊天和个人资料中的样式。",
+    "default": "默认",
+    "plain": "纯色",
+    "glow": "发光",
+    "underline": "下划线",
+    "gradient": "渐变背景",
+    "color": "颜色",
+    "accent": "第二种颜色",
+    "preview": "预览"
+  }
 }

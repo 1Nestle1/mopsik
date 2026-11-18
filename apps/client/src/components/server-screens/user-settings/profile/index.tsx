@@ -6,7 +6,7 @@ import { useOwnPublicUser } from '@/features/server/users/hooks';
 import { getFileUrl } from '@/helpers/get-file-url';
 import type { TPickedImage } from '@/hooks/use-pick-image';
 import { getTRPCClient } from '@/lib/trpc';
-import { DEFAULT_PROFILE_COLOR } from '@sharkord/shared';
+import { DEFAULT_PROFILE_COLOR, type TNicknameStyle } from '@sharkord/shared';
 import {
   ColorPicker,
   Group,
@@ -16,10 +16,12 @@ import {
 } from '@sharkord/ui';
 import { memo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { NicknameSettings } from './nickname-settings';
 
 type TProfileValues = {
   name: string;
   profileColor: string;
+  nicknameStyle: TNicknameStyle | null;
   bio: string;
   // undefined means untouched, null means remove
   avatar?: TPickedImage | null;
@@ -36,6 +38,7 @@ const Profile = memo(() => {
     await trpc.users.update.mutate({
       name: values.name,
       profileColor: values.profileColor,
+      nicknameStyle: values.nicknameStyle,
       bio: values.bio
     });
 
@@ -52,6 +55,7 @@ const Profile = memo(() => {
     initialValues: {
       name: ownPublicUser?.name ?? '',
       profileColor: ownPublicUser?.profileColor ?? DEFAULT_PROFILE_COLOR,
+      nicknameStyle: ownPublicUser?.nicknameStyle ?? null,
       bio: ownPublicUser?.bio ?? ''
     },
     onSave,
@@ -74,26 +78,34 @@ const Profile = memo(() => {
     [onChange]
   );
 
+  const handleNicknameChange = useCallback(
+    (appearance: TNicknameStyle | null) =>
+      onChange('nicknameStyle', appearance),
+    [onChange]
+  );
+
   if (!ownPublicUser) return null;
 
+  const currentAvatarUrl = getFileUrl(ownPublicUser.avatar);
+  const currentBannerUrl = getFileUrl(ownPublicUser.banner);
   const userAvatarUrl =
-    values.avatar?.previewUrl ?? getFileUrl(ownPublicUser.avatar);
+    values.avatar === undefined ? currentAvatarUrl : values.avatar?.previewUrl;
   const userBannerUrl =
-    values.banner?.previewUrl ?? getFileUrl(ownPublicUser.banner);
+    values.banner === undefined ? currentBannerUrl : values.banner?.previewUrl;
 
   return (
     <SettingsSection title={t('profileTitle')} description={t('profileDesc')}>
-      <div className="flex flex-wrap items-start gap-4">
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4">
         <ImagePicker
           label={t('avatarLabel')}
-          className="h-32 w-32 rounded-full"
-          currentUrl={getFileUrl(ownPublicUser.avatar)}
+          className="size-20 rounded-full sm:size-24"
+          currentUrl={currentAvatarUrl}
           draft={values.avatar}
           onChange={handleAvatarChange}
           fallback={
             <UserAvatar
               userId={ownPublicUser.id}
-              className="h-32 w-32 rounded-full bg-muted"
+              className="size-20 rounded-full bg-muted sm:size-24"
               showStatusBadge={false}
               showUserPopover={false}
             />
@@ -102,22 +114,32 @@ const Profile = memo(() => {
 
         <ImagePicker
           label={t('bannerLabel')}
-          className="h-32 w-80"
-          currentUrl={getFileUrl(ownPublicUser.banner)}
+          className="h-20 w-full sm:h-24"
+          currentUrl={currentBannerUrl}
           draft={values.banner}
           onChange={handleBannerChange}
         />
+      </div>
 
-        <Group label={t('profileColorLabel')}>
+      <Group label={t('profileColorLabel')}>
+        <div className="flex flex-wrap items-center gap-3">
           <ColorPicker
+            label={t('profileColorLabel')}
+            resetLabel={t('nicknameStyle.default')}
             value={values.profileColor}
             onChange={handleColorChange}
             defaultValue={DEFAULT_PROFILE_COLOR}
           />
-          <ImageSwatchPicker src={userAvatarUrl} onChange={handleColorChange} />
-          <ImageSwatchPicker src={userBannerUrl} onChange={handleColorChange} />
-        </Group>
-      </div>
+          <ImageSwatchPicker
+            src={userAvatarUrl ?? ''}
+            onChange={handleColorChange}
+          />
+          <ImageSwatchPicker
+            src={userBannerUrl ?? ''}
+            onChange={handleColorChange}
+          />
+        </div>
+      </Group>
 
       <Group label={t('usernameLabel')}>
         <Input placeholder={t('usernamePlaceholder')} {...r('name')} />
@@ -126,6 +148,11 @@ const Profile = memo(() => {
       <Group label={t('bioLabel')}>
         <Textarea placeholder={t('bioPlaceholder')} {...r('bio')} />
       </Group>
+      <NicknameSettings
+        name={values.name}
+        appearance={values.nicknameStyle}
+        onChange={handleNicknameChange}
+      />
     </SettingsSection>
   );
 });

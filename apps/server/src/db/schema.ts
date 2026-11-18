@@ -4,6 +4,7 @@ import {
   PluginCapabilityType,
   type TActivityLogDetailsMap,
   type TMessageMetadata,
+  type TNicknameStyle,
   type TPluginMessageComponent
 } from '@sharkord/shared';
 import { sql } from 'drizzle-orm';
@@ -197,6 +198,9 @@ const users = sqliteTable(
     profileColor: text('profile_color')
       .notNull()
       .default(DEFAULT_PROFILE_COLOR),
+    nicknameStyle: text('nickname_style', {
+      mode: 'json'
+    }).$type<TNicknameStyle>(),
     lastLoginAt: integer('last_login_at')
       .notNull()
       .$defaultFn(() => Date.now()),

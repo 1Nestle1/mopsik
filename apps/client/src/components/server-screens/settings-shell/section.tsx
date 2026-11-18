@@ -3,7 +3,8 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
+  cn
 } from '@sharkord/ui';
 import { memo, type ReactNode } from 'react';
 
@@ -24,8 +25,8 @@ const SettingsSection = memo(
     className
   }: TSettingsSectionProps) => {
     return (
-      <Card className={className}>
-        <CardHeader>
+      <Card className={cn('gap-4 py-4 md:py-5', className)}>
+        <CardHeader className="px-4 md:px-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <CardTitle>{title}</CardTitle>
@@ -36,7 +37,7 @@ const SettingsSection = memo(
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">{children}</CardContent>
+        <CardContent className="space-y-4 px-4 md:px-5">{children}</CardContent>
       </Card>
     );
   }

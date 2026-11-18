@@ -601,5 +601,22 @@
   "streamingGuideServer": "Paste the server URL into Server and your stream key into Bearer Token.",
   "streamingGuideVideo": "In Settings → Output, pick an H.264 encoder (NVIDIA NVENC or x264), CBR at about 6000 Kbps, a keyframe interval of 1 s and 0 B-frames.",
   "streamingGuideAudio": "Use Opus for audio. To share only a game's sound, add an Application Audio Capture source.",
-  "streamingGuideStart": "Join a voice channel here, then press Start Streaming in OBS. Your stream shows up in the call for everyone."
+  "streamingGuideStart": "Join a voice channel here, then press Start Streaming in OBS. Your stream shows up in the call for everyone.",
+  "appearanceTab": "Appearance",
+  "appearanceDescription": "Choose how MOPSCORD looks on this device.",
+  "themeDark": "Dark",
+  "themeLight": "Light",
+  "themeSystem": "System",
+  "nicknameStyle": {
+    "label": "Nickname effect",
+    "description": "Choose how your nickname appears in chat and on your profile.",
+    "default": "Default",
+    "plain": "Solid color",
+    "glow": "Glow",
+    "underline": "Underline",
+    "gradient": "Gradient background",
+    "color": "Color",
+    "accent": "Second color",
+    "preview": "Preview"
+  }
 }

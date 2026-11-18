@@ -27,7 +27,7 @@ const ServerSearch = memo(() => {
     <button
       type="button"
       onClick={openSearchDialog}
-      className="flex w-96 max-w-2xl items-center gap-2 rounded-full bg-background/70 px-3.5 py-1.5 text-xs text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-background hover:text-foreground"
+      className="flex w-96 max-w-2xl items-center gap-2 rounded-md bg-background/70 px-3.5 py-1.5 text-xs text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-background hover:text-foreground"
     >
       <Search className="h-3.5 w-3.5" />
       <span className="truncate text-left">{t('searchContent')}</span>

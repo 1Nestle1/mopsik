@@ -1,4 +1,5 @@
 import { EmojiPicker } from '@/components/emoji-picker';
+import { GifPicker } from '@/components/gif-picker';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import type { TTiptapInputHandle } from '@/components/tiptap-input';
 import { TiptapInput } from '@/components/tiptap-input';
@@ -146,6 +147,7 @@ const MessageCompose = memo(
       uploadingSize,
       uploadSpeed,
       openFileDialog,
+      addFiles,
       fileInputProps
     } = useUploadFiles(channelId, containerRef, !canSendMessages);
 
@@ -232,6 +234,17 @@ const MessageCompose = memo(
     const insertEmoji = useCallback((emoji: TEmojiItem) => {
       tiptapRef.current?.insertEmoji(emoji);
     }, []);
+    const insertGif = useCallback((src: string, title: string) => {
+      tiptapRef.current?.insertGif(src, title);
+    }, []);
+    const attachGif = useCallback(
+      (file: File) => {
+        addFiles([file])
+          .then(() => tiptapRef.current?.focus())
+          .catch(() => toast.error(t('myGifs.importError')));
+      },
+      [addFiles, t]
+    );
 
     const onRemoveFileClick = useCallback(
       async (fileId: string) => {
@@ -269,7 +282,7 @@ const MessageCompose = memo(
     return (
       <div
         ref={containerRef}
-        className="compose-container relative shrink-0 min-h-14 mx-3 mb-3 flex flex-col overflow-hidden rounded-2xl bg-card pb-[env(safe-area-inset-bottom)]"
+        className="compose-container relative mx-4 mb-4 flex min-h-12 shrink-0 flex-col overflow-hidden rounded-xl border border-border bg-card pb-[env(safe-area-inset-bottom)]"
       >
         <UsersTypingIndicator typingUsers={typingUsers} />
 
@@ -334,7 +347,7 @@ const MessageCompose = memo(
           </div>
 
           <input {...fileInputProps} />
-          <div className="flex items-start pr-4 pt-2 shrink-0 sticky top-0">
+          <div className="sticky top-0 flex shrink-0 items-start pr-1.5 pt-1.5 sm:gap-0.5 sm:pr-2">
             {showPluginSlot && (
               <PluginSlotRenderer
                 slotId={PluginSlot.CHAT_ACTIONS}
@@ -342,6 +355,14 @@ const MessageCompose = memo(
               />
             )}
 
+            <GifPicker
+              onSelect={insertGif}
+              onSelectLocal={attachGif}
+              localEnabled={
+                canUploadFiles && !!publicSettings?.storageUploadEnabled
+              }
+              disabled={uploading || sending || !canSendMessages}
+            />
             <EmojiPicker onEmojiSelect={insertEmoji}>
               <Button
                 size="icon"

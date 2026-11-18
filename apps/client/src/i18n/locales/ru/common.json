@@ -174,5 +174,34 @@
   "commandArgYes": "Да",
   "commandArgNo": "Нет",
   "commandArgMissing": "/{{commandName}}: укажите значение для {{argName}}.",
-  "mutedByModerator": "Модератор отключил вам микрофон."
+  "mutedByModerator": "Модератор отключил вам микрофон.",
+  "composeGif": "Добавить GIF",
+  "gifSearch": "Поиск GIF-реакций",
+  "gifSearchProvider": "Поиск в {{provider}}",
+  "gifSource": "Источник GIF",
+  "gifInsert": "Добавить «{{title}}»",
+  "gifLoading": "Загрузка GIF…",
+  "gifEmpty": "GIF не найдены.",
+  "gifError": "Не удалось загрузить GIF. Попробуйте другой запрос или источник.",
+  "gifLibrary": {
+    "hello": "Привет",
+    "laugh": "Смех",
+    "celebrate": "Ура",
+    "love": "Любовь",
+    "facepalm": "Рука-лицо",
+    "brb": "Скоро вернусь"
+  },
+  "myGifs": {
+    "tab": "Мои GIF",
+    "search": "Поиск по моим GIF",
+    "import": "Импорт GIF",
+    "play": "Запустить анимацию",
+    "pause": "Приостановить анимацию",
+    "save": "Сохранить «{{title}}» в «Мои GIF»",
+    "remove": "Удалить «{{title}}» из «Мои GIF»",
+    "empty": "Сохраните реакцию или импортируйте GIF с этого устройства.",
+    "storageError": "Не удалось обновить коллекцию на этом устройстве.",
+    "importError": "Выберите корректный GIF до 8 МБ и проверьте свободное место в коллекции.",
+    "saved": "Сохранено в «Мои GIF»"
+  }
 }

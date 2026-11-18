@@ -13,7 +13,7 @@ const CONTENT_SECURITY_POLICY = [
   "img-src 'self' data: blob: https:",
   "media-src 'self' blob:",
   "font-src 'self' data:",
-  "connect-src 'self' ws: wss: https://raw.githubusercontent.com",
+  "connect-src 'self' ws: wss: https://raw.githubusercontent.com https://api.giphy.com https://api.klipy.com",
   "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",

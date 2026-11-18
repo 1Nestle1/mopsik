@@ -133,5 +133,34 @@
   "commandArgYes": "Oui",
   "commandArgNo": "Non",
   "commandArgMissing": "/{{commandName}} a besoin d'une valeur pour {{argName}}.",
-  "mutedByModerator": "Un modérateur vous a rendu muet."
+  "mutedByModerator": "Un modérateur vous a rendu muet.",
+  "composeGif": "Ajouter un GIF",
+  "gifSearch": "Rechercher des GIF de réaction",
+  "gifSearchProvider": "Rechercher sur {{provider}}",
+  "gifSource": "Source des GIF",
+  "gifInsert": "Ajouter « {{title}} »",
+  "gifLoading": "Chargement des GIF…",
+  "gifEmpty": "Aucun GIF trouvé.",
+  "gifError": "Impossible de charger les GIF. Essayez une autre recherche ou une autre source.",
+  "gifLibrary": {
+    "hello": "Bonjour",
+    "laugh": "Rire",
+    "celebrate": "Célébration",
+    "love": "Amour",
+    "facepalm": "Main sur le visage",
+    "brb": "Je reviens vite"
+  },
+  "myGifs": {
+    "tab": "Mes GIF",
+    "search": "Rechercher dans mes GIF",
+    "import": "Importer un GIF",
+    "play": "Animer les aperçus",
+    "pause": "Suspendre les aperçus",
+    "save": "Enregistrer « {{title}} » dans Mes GIF",
+    "remove": "Retirer « {{title}} » de Mes GIF",
+    "empty": "Enregistrez une réaction ou importez un GIF depuis cet appareil.",
+    "storageError": "Impossible de mettre à jour vos GIF sur cet appareil.",
+    "importError": "Choisissez un GIF valide de 8 Mo maximum et vérifiez l’espace dans votre collection.",
+    "saved": "Enregistré dans Mes GIF"
+  }
 }

@@ -86,9 +86,9 @@ const UserControl = memo(() => {
   if (!ownPublicUser) return null;
 
   return (
-    <div className="flex items-center justify-between h-14 px-2">
+    <div className="flex h-14 shrink-0 items-center justify-between gap-1 border-t border-sidebar-border px-2">
       <UserPopover userId={ownPublicUser.id}>
-        <div className="flex items-center space-x-2 min-w-0 flex-1 cursor-pointer rounded-full p-1 pr-2 transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06]">
+        <div className="flex items-center space-x-2 min-w-0 flex-1 cursor-pointer rounded-md p-1 pr-2 transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06]">
           <UserAvatar
             userId={ownPublicUser.id}
             className="h-8 w-8 flex-shrink-0"

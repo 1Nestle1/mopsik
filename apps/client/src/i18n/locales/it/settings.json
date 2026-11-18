@@ -552,5 +552,22 @@
   "hotkeysSaved": "Impostazioni delle scorciatoie salvate",
   "failedSaveHotkeys": "Impossibile salvare le impostazioni delle scorciatoie",
   "hotkeysBridgeFailed": "Non trovato, tentativi interrotti",
-  "hotkeysBridgeRetry": "Prova a connettere"
+  "hotkeysBridgeRetry": "Prova a connettere",
+  "appearanceTab": "Aspetto",
+  "appearanceDescription": "Scegli l’aspetto di MOPSCORD su questo dispositivo.",
+  "themeDark": "Scuro",
+  "themeLight": "Chiaro",
+  "themeSystem": "Sistema",
+  "nicknameStyle": {
+    "label": "Effetto del soprannome",
+    "description": "Scegli come appare il soprannome nella chat e nel profilo.",
+    "default": "Predefinito",
+    "plain": "Colore uniforme",
+    "glow": "Bagliore",
+    "underline": "Sottolineatura",
+    "gradient": "Sfondo sfumato",
+    "color": "Colore",
+    "accent": "Secondo colore",
+    "preview": "Anteprima"
+  }
 }

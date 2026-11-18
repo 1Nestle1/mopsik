@@ -69,7 +69,8 @@
   speaking and the channel you are live in. everything else stays grey and white
 */
 :root {
-  --radius: 0.75rem;
+  color-scheme: light;
+  --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -107,6 +108,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.27 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.31 0 0);
@@ -141,6 +143,36 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+.nickname-effect {
+  color: color-mix(in srgb, var(--foreground) 64%, var(--nickname-color));
+}
+
+.nickname-effect[data-effect='glow'] {
+  text-shadow: 0 1px 5px
+    color-mix(in srgb, var(--nickname-color) 55%, transparent);
+}
+
+.nickname-effect[data-effect='underline'] {
+  text-decoration: underline 1px;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--foreground) 35%,
+    var(--nickname-color)
+  );
+  text-underline-offset: 0.2em;
+}
+
+.nickname-effect[data-effect='gradient'] {
+  padding-inline: 0.3em;
+  border-radius: var(--radius-sm);
+  color: var(--foreground);
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--nickname-color) 22%, transparent),
+    color-mix(in srgb, var(--nickname-accent) 26%, transparent)
+  );
 }
 
 @layer base {
@@ -212,7 +244,8 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 10;
+  /* settings sit above the mobile drawers and below dialogs */
+  z-index: 45;
 }
 
 .line-break {
@@ -259,6 +292,14 @@ body,
 
   .ProseMirror-separator {
     display: none;
+  }
+
+  img.message-gif {
+    display: block;
+    max-inline-size: min(100%, 20rem);
+    max-block-size: 15rem;
+    object-fit: contain;
+    border-radius: var(--radius);
   }
 
   a {

@@ -237,7 +237,7 @@ const ItemWrapper = memo(
         onDragLeave={onDragLeave}
         onDrop={onDrop}
         className={cn(
-          'flex w-full items-center gap-2 rounded-full px-2.5 py-1.5 text-sm text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] hover:text-foreground select-none cursor-pointer',
+          'flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] hover:text-foreground select-none cursor-pointer',
           {
             'bg-primary/12 text-foreground hover:bg-primary/16': isSelected,
             'cursor-default opacity-50 hover:bg-transparent hover:text-muted-foreground':

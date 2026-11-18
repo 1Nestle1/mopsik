@@ -1,12 +1,38 @@
 import { ChannelChip } from '@/components/channel-chip';
+import { GifImage } from '@/components/gif-picker/gif-image';
+import { SaveGifButton } from '@/components/gif-picker/save-gif-button';
 import { RoleMentionChip } from '@/components/role-mention-chip';
-import { MessageNodeType, parseDomCommand } from '@sharkord/shared';
+import {
+  getGifProvider,
+  MessageNodeType,
+  parseDomCommand
+} from '@sharkord/shared';
 import { Element, type DOMNode } from 'html-react-parser';
 import { CommandOverride } from '../overrides/command';
 import { MentionOverride } from '../overrides/mention';
 
 const serializer = (domNode: DOMNode, messageId: number) => {
   try {
+    if (
+      domNode instanceof Element &&
+      domNode.name === 'span' &&
+      domNode.attribs['data-type'] === 'gif'
+    ) {
+      const src = domNode.attribs['data-name'];
+      const text = domNode.children
+        .map((child) => (child.type === 'text' ? child.data : ''))
+        .join('');
+
+      return (
+        <span className="relative inline-flex max-w-full items-start gap-1.5 align-middle">
+          <GifImage className="message-gif" src={src ?? ''} title={text} />
+          {src && getGifProvider(src) === 'library' && (
+            <SaveGifButton src={src} title={text} />
+          )}
+        </span>
+      );
+    }
+
     if (domNode instanceof Element && domNode.name === 'command') {
       const command = parseDomCommand(domNode);
 

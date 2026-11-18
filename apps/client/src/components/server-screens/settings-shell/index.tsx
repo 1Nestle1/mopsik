@@ -104,8 +104,8 @@ const SettingsShell = memo(
 
     return (
       <SettingsFormContext.Provider value={setForm}>
-        <div className="flex h-dvh flex-col bg-background text-foreground dark">
-          <div className="flex h-14 shrink-0 items-center gap-2 bg-sidebar px-4">
+        <div className="flex h-dvh flex-col bg-background text-foreground">
+          <div className="flex h-14 shrink-0 items-center gap-2 border-b border-sidebar-border bg-sidebar px-4">
             <Button
               variant="ghost"
               size="icon"
@@ -144,7 +144,7 @@ const SettingsShell = memo(
             />
 
             <main className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-4xl space-y-6 p-4 md:p-6">
+              <div className="mx-auto max-w-3xl space-y-4 p-4 md:px-6 md:py-5">
                 {selectedEntry?.content}
               </div>
 

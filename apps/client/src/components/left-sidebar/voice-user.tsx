@@ -1,3 +1,4 @@
+import { Nickname } from '@/components/nickname';
 import { UserAvatar } from '@/components/user-avatar';
 import { useStreamVolumeControl } from '@/components/voice-provider/hooks/use-stream-volume-control';
 import { useCan } from '@/features/server/hooks';
@@ -65,7 +66,7 @@ const VoiceUser = memo(
         draggable={canMove}
         onDragStart={canMove ? handleDragStart : undefined}
         className={cn(
-          'flex items-center gap-2 px-2 py-1 rounded-full transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] text-sm',
+          'flex items-center gap-2 px-2 py-1 rounded-md transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] text-sm',
           canMove && 'cursor-grab active:cursor-grabbing'
         )}
       >
@@ -76,9 +77,9 @@ const VoiceUser = memo(
           showStatusBadge={false}
         />
 
-        <span className="flex-1 truncate text-xs text-foreground/80">
-          {user.name}
-        </span>
+        <div className="min-w-0 flex-1 truncate text-xs text-foreground/80">
+          <Nickname name={user.name} appearance={user.nicknameStyle} />
+        </div>
 
         <PluginSlotRenderer
           slotId={PluginSlot.VOICE_USER_ROW}

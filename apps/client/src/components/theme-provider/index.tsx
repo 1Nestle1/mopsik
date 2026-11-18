@@ -3,27 +3,14 @@ import {
   LocalStorageKey,
   setLocalStorageItem
 } from '@/helpers/storage';
-import { createContext, useEffect, useState } from 'react';
-
-type Theme = 'dark' | 'light' | 'system';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import { ThemeProviderContext, type TTheme } from './context';
 
 type ThemeProviderProps = {
   children: React.ReactNode;
-  defaultTheme?: Theme;
+  defaultTheme?: TTheme;
   storageKey?: LocalStorageKey;
 };
-
-type ThemeProviderState = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-const initialState: ThemeProviderState = {
-  theme: 'system',
-  setTheme: () => null
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 function ThemeProvider({
   children,
@@ -31,35 +18,44 @@ function ThemeProvider({
   storageKey = LocalStorageKey.VITE_UI_THEME,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (getLocalStorageItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<TTheme>(() => {
+    const stored = getLocalStorageItem(storageKey);
 
-  useEffect(() => {
+    return stored === 'dark' || stored === 'light' || stored === 'system'
+      ? stored
+      : defaultTheme;
+  });
+
+  useLayoutEffect(() => {
     const root = window.document.documentElement;
+    const preference = window.matchMedia('(prefers-color-scheme: dark)');
 
-    root.classList.remove('light', 'dark');
+    const applyTheme = () => {
+      const dark =
+        theme === 'dark' || (theme === 'system' && preference.matches);
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
+      root.classList.toggle('dark', dark);
+      root.classList.toggle('light', !dark);
+    };
 
-      root.classList.add(systemTheme);
-      return;
-    }
+    applyTheme();
+    if (theme !== 'system') return;
 
-    root.classList.add(theme);
+    preference.addEventListener('change', applyTheme);
+    return () => preference.removeEventListener('change', applyTheme);
   }, [theme]);
 
-  const value = {
-    theme,
-    setTheme: (theme: Theme) => {
-      setLocalStorageItem(storageKey, theme);
-      setTheme(theme);
-    }
-  };
+  const updateTheme = useCallback(
+    (nextTheme: TTheme) => {
+      setLocalStorageItem(storageKey, nextTheme);
+      setTheme(nextTheme);
+    },
+    [storageKey]
+  );
+  const value = useMemo(
+    () => ({ theme, setTheme: updateTheme }),
+    [theme, updateTheme]
+  );
 
   return (
     <ThemeProviderContext.Provider {...props} value={value}>

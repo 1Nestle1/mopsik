@@ -295,6 +295,13 @@ const useUploadFiles = (
     [takeAllowedFiles, settings?.storageUploadMaxFileSize]
   );
 
+  const addFiles = useCallback(
+    async (files: File[]) => {
+      if (checkUploadPermissions()) await processFiles(files);
+    },
+    [checkUploadPermissions, processFiles]
+  );
+
   const onFileDialogChange = useCallback(
     async (event: React.ChangeEvent<HTMLInputElement>) => {
       const list = event.currentTarget.files;
@@ -453,6 +460,7 @@ const useUploadFiles = (
       uploadingSize,
       uploadSpeed,
       openFileDialog,
+      addFiles,
       fileInputProps
     }),
     [
@@ -464,6 +472,7 @@ const useUploadFiles = (
       uploadingSize,
       uploadSpeed,
       openFileDialog,
+      addFiles,
       fileInputProps
     ]
   );

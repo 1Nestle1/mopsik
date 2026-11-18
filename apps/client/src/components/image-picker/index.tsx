@@ -67,7 +67,9 @@ const ImagePicker = memo(
 
     return (
       <Group label={label} description={description}>
-        <div
+        <button
+          type="button"
+          aria-label={label}
           className={cn(
             'group relative h-24 w-80 cursor-pointer transition-opacity',
             className
@@ -75,12 +77,12 @@ const ImagePicker = memo(
           onClick={handlePick}
         >
           {preview}
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-            <div className="rounded-full bg-black/50 p-3">
-              <Upload className="h-6 w-6 text-white" />
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+            <div className="rounded-md bg-black/60 p-2">
+              <Upload className="size-4 text-white" />
             </div>
           </div>
-        </div>
+        </button>
 
         {previewUrl && (
           <div>

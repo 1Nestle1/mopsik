@@ -1,3 +1,4 @@
+import { Nickname } from '@/components/nickname';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import { setModViewOpen } from '@/features/app/actions';
 import { openDirectMessage } from '@/features/server/actions';
@@ -97,9 +98,11 @@ const UserPopover = memo(({ userId, children }: TUserPopoverProps) => {
 
         <div className="px-4 pt-12 pb-4">
           <div className="mb-3">
-            <span className="text-lg font-semibold text-foreground truncate mb-1">
-              {getRenderedUsername(user)}
-            </span>
+            <Nickname
+              name={getRenderedUsername(user)}
+              appearance={isDeleted ? null : user.nicknameStyle}
+              className="inline-block max-w-full truncate text-lg font-semibold"
+            />
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-2">
                 <UserStatusBadge

@@ -1,3 +1,4 @@
+import { Nickname } from '@/components/nickname';
 import { PluginSlotRenderer } from '@/components/plugin-slot-renderer';
 import { ResizableSidebar } from '@/components/resizable-sidebar';
 import { UserAvatar } from '@/components/user-avatar';
@@ -8,7 +9,8 @@ import { cn } from '@/lib/utils';
 import {
   DELETED_USER_IDENTITY_AND_NAME,
   PluginSlot,
-  TestId
+  TestId,
+  type TNicknameStyle
 } from '@sharkord/shared';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,9 +26,10 @@ type TUserProps = {
   userId: number;
   name: string;
   banned: boolean;
+  nicknameStyle?: TNicknameStyle | null;
 };
 
-const User = memo(({ userId, name, banned }: TUserProps) => {
+const User = memo(({ userId, name, banned, nicknameStyle }: TUserProps) => {
   const pluginProps = useMemo(() => ({ userId }), [userId]);
 
   return (
@@ -37,17 +40,17 @@ const User = memo(({ userId, name, banned }: TUserProps) => {
           tabIndex={0}
           onKeyDown={activateOnKey}
           data-testid={TestId.MEMBER_ITEM}
-          className="flex items-center gap-3 rounded-full cursor-pointer px-2 py-1.5 transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] select-none min-w-0"
+          className="flex items-center gap-2.5 rounded-md cursor-pointer px-2.5 py-1.5 transition-colors duration-150 ease-emphasized hover:bg-foreground/[0.06] select-none min-w-0"
         >
           <UserAvatar userId={userId} className="h-8 w-8 shrink-0" />
-          <span
+          <Nickname
+            name={name}
+            appearance={banned ? null : nicknameStyle}
             className={cn(
               'text-sm text-foreground truncate',
               banned && 'line-through text-muted-foreground'
             )}
-          >
-            {name}
-          </span>
+          />
 
           <PluginSlotRenderer
             slotId={PluginSlot.MEMBER_LIST_ITEM}
@@ -92,7 +95,7 @@ const RightSidebar = memo(
         isOpen={isOpen}
         className={cn('h-full', className)}
       >
-        <div className="flex h-12 items-center px-4">
+        <div className="flex h-12 shrink-0 items-center border-b border-sidebar-border px-4">
           <h3 className="text-sm font-semibold text-foreground">
             {t('membersHeader', { count: usersCount })}
           </h3>
@@ -105,6 +108,7 @@ const RightSidebar = memo(
                 userId={user.id}
                 name={user.name}
                 banned={user.banned}
+                nicknameStyle={user.nicknameStyle}
               />
             ))}
             {hasHiddenUsers && (

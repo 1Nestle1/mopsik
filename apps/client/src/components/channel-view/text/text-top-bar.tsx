@@ -63,11 +63,13 @@ const TextTopbar = memo(
     }, [channel]);
 
     return (
-      <div className="flex h-12 border-b border-border bg-card w-auto overflow-hidden">
-        <div className="flex w-full items-center justify-between px-4">
+      <div className="flex h-12 shrink-0 overflow-hidden border-b border-border bg-background">
+        <div className="flex w-full min-w-0 items-center justify-between gap-3 px-4">
           <div className="flex items-center gap-2 min-w-0">
             {getIcon()}
-            <span className="font-bold truncate max-w-40">{info.name}</span>
+            <span className="shrink-0 truncate text-sm font-semibold max-w-[min(12rem,45vw)]">
+              {info.name}
+            </span>
             {info.topic && (
               <span className="text-xs text-muted-foreground truncate">
                 {info.topic}

@@ -75,7 +75,7 @@ const Category = memo(({ categoryId }: TCategoryProps) => {
         transition,
         opacity: isDragging ? 0.5 : 1
       }}
-      className="mb-4"
+      className="mb-3 last:mb-0"
       data-testid={TestId.CATEGORY_ITEM}
       data-category-id={category.id}
     >

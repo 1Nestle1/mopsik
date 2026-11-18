@@ -552,5 +552,22 @@
   "hotkeysSaved": "Nastavení klávesových zkratek uloženo",
   "failedSaveHotkeys": "Nepodařilo se uložit nastavení klávesových zkratek",
   "hotkeysBridgeFailed": "Nenalezeno, přestalo se zkoušet",
-  "hotkeysBridgeRetry": "Zkusit připojit"
+  "hotkeysBridgeRetry": "Zkusit připojit",
+  "appearanceTab": "Vzhled",
+  "appearanceDescription": "Vyberte vzhled MOPSCORDu na tomto zařízení.",
+  "themeDark": "Tmavý",
+  "themeLight": "Světlý",
+  "themeSystem": "Podle systému",
+  "nicknameStyle": {
+    "label": "Efekt přezdívky",
+    "description": "Vyberte vzhled přezdívky v chatu a profilu.",
+    "default": "Výchozí",
+    "plain": "Jednolitá barva",
+    "glow": "Záře",
+    "underline": "Podtržení",
+    "gradient": "Přechodové pozadí",
+    "color": "Barva",
+    "accent": "Druhá barva",
+    "preview": "Náhled"
+  }
 }

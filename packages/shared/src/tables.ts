@@ -107,6 +107,7 @@ type TPublicUser = Pick<
   | 'createdAt'
 > & {
   status?: UserStatus;
+  nicknameStyle?: TUser['nicknameStyle'];
   _identity?: string;
 };
 
