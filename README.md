@@ -20,6 +20,10 @@
 
 Sharkord is a self-hosted communication platform that brings the most important Discord-like features to your own infrastructure. Voice, video, and screen sharing without the bloat or surveillance.
 
+## Try a voice room in Mopscord
+
+Join the same voice channel from two accounts. Speak into one microphone and watch the speaking ring on its tile. Open the other participant’s context menu to adjust their volume. The [fork improvement log](IMPROVEMENT_PLAN.md) describes the microphone recovery flow and screen-sharing modes.
+
 ## Screenshots
 
 ![Sharkord Screenshot](https://i.imgur.com/urO9vKC.png)
