@@ -1,6 +1,6 @@
 <div align="center">
-  <h1>Sharkord</h1>
-  <p><strong>A lightweight, self-hosted real-time communication platform</strong></p>
+  <h1>Mopscord</h1>
+  <p><strong>Self-hosted voice rooms and threaded chat, built on Sharkord</strong></p>
   
   [![Version](https://img.shields.io/github/v/release/Sharkord/sharkord)](https://github.com/Sharkord/sharkord/releases)
   [![License](https://img.shields.io/github/license/Sharkord/sharkord)](LICENSE)
@@ -13,20 +13,19 @@
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B71U3476)
 
-## What is Sharkord?
+## Catch up in a channel
 
-> [!NOTE]
-> Sharkord is in alpha stage. Bugs, incomplete features and breaking changes are to be expected.
+Open the Lounge to see unread channels and available voice rooms. Select a text channel to read replies, follow threads, and react to messages. This is the fork running locally with its seeded example community.
 
-Sharkord is a self-hosted communication platform that brings the most important Discord-like features to your own infrastructure. Voice, video, and screen sharing without the bloat or surveillance.
+![Design channel with a threaded conversation and member list](docs/images/channel.png)
 
-## Try a voice room in Mopscord
+## Join a voice room
 
-Join the same voice channel from two accounts. Speak into one microphone and watch the speaking ring on its tile. Open the other participant’s context menu to adjust their volume. The [fork improvement log](IMPROVEMENT_PLAN.md) describes the microphone recovery flow and screen-sharing modes.
+Select a voice channel such as **Late Night**. The channel list shows who joined, the stage displays each participant, and the call controls stay accessible while connected. The screenshot shows one local participant using a test microphone.
 
-## Screenshots
+![Connected participant on the Late Night voice stage](docs/images/voice.png)
 
-![Sharkord Screenshot](https://i.imgur.com/urO9vKC.png)
+See the [fork improvement log](IMPROVEMENT_PLAN.md) for voice recovery, moderation and screen-sharing changes. The [development guide](DEVELOPMENT.md) includes the sample-data setup.
 
 ## Features
 
